@@ -1,9 +1,9 @@
 {
   "run_id": "smoke-2026-10-16-v2",
   "agent_version": "signalpost-agent-1.0.0",
-  "started_at": "2026-10-16T19:00:17.109000Z",
-  "completed_at": "2026-10-16T19:04:40.869549Z",
-  "wall_seconds": 263.8,
+  "started_at": "2026-10-16T19:15:08.081655Z",
+  "completed_at": "2026-10-16T19:19:28.814206Z",
+  "wall_seconds": 260.8,
   "expected_count": 100,
   "input_rows": 100,
   "emitted_envelopes": 100,
@@ -35,22 +35,22 @@
   },
   "operations": {
     "requests": 753,
-    "bytes": 22350611,
-    "p50_ms": 1114,
-    "p95_ms": 2835,
+    "bytes": 22564435,
+    "p50_ms": 1112,
+    "p95_ms": 2699,
     "third_party_cost_usd": 0,
-    "company_runtime_p50_ms": 10344,
-    "company_runtime_p95_ms": 35210
+    "company_runtime_p50_ms": 10448,
+    "company_runtime_p95_ms": 36785
   },
   "nav_job_feed": {
     "status": "ready",
     "window_days": 60,
-    "window_start": "2026-08-17T19:00:18.450175Z",
+    "window_start": "2026-08-17T19:15:09.417414Z",
     "pages": 125,
-    "ads_indexed": 123803,
+    "ads_indexed": 123802,
     "feed_requests": 126,
     "verification_requests": 0,
-    "finished_at": "2026-10-16T19:04:40.829870Z",
+    "finished_at": "2026-10-16T19:19:28.784151Z",
     "errors": []
   },
   "coverage_by_family": {
