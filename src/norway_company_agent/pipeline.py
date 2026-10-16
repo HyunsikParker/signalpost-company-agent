@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import urllib.parse
 from typing import Any
 
 from .evidence import evidence
@@ -70,6 +71,15 @@ def research_company(
             registry_website, org=org, registry_row=row, legal_name=str(profile.get("name") or ""), source_class="registry_linked_company_website",
             origin="registry_website", deadline=deadline, log=log,
         )
+        if registry_record.get("status") == "not_found" and "did not resolve" in str(registry_record.get("note")):
+            host = (urllib.parse.urlparse(registry_record.get("source_url") or "").hostname or "").casefold()
+            alternate = resolving_host(host.removeprefix("www.")) if host else None
+            if alternate and alternate != host:
+                attempts.append(_attempt(registry_record, str(registry_website), "registry_website"))
+                registry_record, pages = crawl_site(
+                    "https://" + alternate + "/", org=org, registry_row=row, legal_name=str(profile.get("name") or ""),
+                    source_class="registry_linked_company_website", origin="registry_website", deadline=deadline, log=log,
+                )
         registry_record = gate_company_site(profile, registry_record)
         attempts.append(_attempt(registry_record, str(registry_website), "registry_website"))
         if _published(registry_record):

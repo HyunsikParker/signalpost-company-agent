@@ -106,6 +106,21 @@ class IdentityGateTest(unittest.TestCase):
         record["value"]["registry_corroborations"] = ["registry telefon 51 68 57 00 appears on the page"]
         self.assertTrue(assess_site_identity(profile(), record)["publishable"])
 
+    def test_full_registered_name_and_place_prove_a_no_domain(self):
+        record = site({"discovery_origin": "legal_name_domain_guess", "registered_domain": "fjordelektro.no",
+                       "full_legal_name_span": "Fjord Elektro AS, Lakselv", "registry_place_matches": ["LAKSELV"]})
+        self.assertTrue(assess_site_identity(profile(), record)["publishable"])
+        record["value"]["registered_domain"] = "fjordelektro.com"
+        self.assertFalse(assess_site_identity(profile(), record)["publishable"])
+        record["value"].update(registered_domain="fjordelektro.no", registry_place_matches=[])
+        self.assertFalse(assess_site_identity(profile(), record)["publishable"])
+
+    def test_place_inside_the_name_does_not_count(self):
+        from norway_company_agent.site_research import place_corroborations
+        row = {"forretningsadresse.kommune": "EIDSVOLL", "forretningsadresse.poststed": "RÅHOLT"}
+        self.assertEqual(place_corroborations("Milano Eidsvoll, Eidsvoll sentrum", row, "MILANO EIDSVOLL AS"), [])
+        self.assertEqual(place_corroborations("Milano Eidsvoll, Råholt", row, "MILANO EIDSVOLL AS"), ["RÅHOLT"])
+
     def test_registry_e_mail_domain_with_matching_name_is_exact(self):
         record = site({"title": "Fjord Elektro AS", "discovery_origin": "registry_email_domain"})
         self.assertTrue(assess_site_identity(profile(), record)["publishable"])
@@ -168,6 +183,29 @@ class CareerLinkTest(unittest.TestCase):
         <a href="/om-oss/karriere/">Karriere</a><a href="/hjelp">Ledige stillinger</a><a href="https://firma.teamtailor.com/jobs">Se jobber</a>"""
         found = [item["url"] for item in career_links("https://example.no/", BeautifulSoup(html, "lxml"), "example.no")]
         self.assertEqual(found, ["https://firma.teamtailor.com/jobs", "https://example.no/hjelp", "https://example.no/om-oss/karriere/"])
+
+
+class NewsListingTest(unittest.TestCase):
+    def test_dates_in_norwegian_and_english_forms(self):
+        from norway_company_agent.site_research import find_date
+        self.assertEqual(find_date("Publisert 12. okt. 2026"), "2026-10-12")
+        self.assertEqual(find_date("3. mars 2025 – nyhet"), "2025-03-03")
+        self.assertEqual(find_date("Oppdatert 07.09.2026"), "2026-09-07")
+        self.assertEqual(find_date("October 5, 2026"), "2026-10-05")
+        self.assertIsNone(find_date("Tlf 51 68 57 00"))
+
+    def test_listing_uses_each_items_own_date(self):
+        from bs4 import BeautifulSoup
+        from norway_company_agent.site_research import listing_items
+        html = """<main><ul>
+          <li><a href="/nyheter/ny-avtale-med-kommunen"><h3>Ny avtale med kommunen</h3></a><span>12.10.2026</span></li>
+          <li><a href="/nyheter/apner-avdeling-i-bergen">Vi åpner avdeling i Bergen</a></li>
+          <li><time datetime="2026-08-01">1. august</time><a href="/nyheter/sommerstengt">Sommerstengt i juli</a></li>
+          <li><a href="/om-oss">Om oss 01.01.2026</a></li>
+        </ul></main>"""
+        items = listing_items("https://example.no/nyheter", BeautifulSoup(html, "lxml"), "example.no", NOW)
+        self.assertEqual([(item["title"], item["date"]) for item in items],
+                         [("Ny avtale med kommunen", "2026-10-12"), ("Sommerstengt i juli", "2026-08-01")])
 
 
 class NavJobsTest(unittest.TestCase):

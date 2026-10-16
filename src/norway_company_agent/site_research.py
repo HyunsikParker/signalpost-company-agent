@@ -132,6 +132,27 @@ def legal_name_pattern(name: str) -> re.Pattern[str] | None:
     return re.compile(r"(?<![^\W_])" + r"[\W_]{1,3}".join(re.escape(word) for word in words) + r"(?![^\W_])", re.I)
 
 
+def full_legal_name_pattern(name: str) -> re.Pattern[str] | None:
+    """The complete registered name, legal form included ("Finnmark Utleie AS"), as written on a page."""
+    words = re.findall(r"[^\W_]+", str(name or "").casefold())
+    if len(words) < 2 or not any(word in LEGAL_SUFFIXES for word in words):
+        return None
+    return re.compile(r"(?<![^\W_])" + r"[\W_]{1,3}".join(re.escape(word) for word in words) + r"(?![^\W_])", re.I)
+
+
+def place_corroborations(text: str, registry_row: dict[str, Any], legal_name: str) -> list[str]:
+    """Registered municipality, postal place or postcode on the page, ignoring places that are part of the name."""
+    found = []
+    name = str(legal_name or "").casefold()
+    for key in ("forretningsadresse.poststed", "forretningsadresse.kommune", "forretningsadresse.postnummer", "postadresse.poststed"):
+        value = str(registry_row.get(key) or "").strip()
+        if len(value) < 3 or value.casefold() in name:
+            continue
+        if re.search(r"(?<![^\W_])" + re.escape(value) + r"(?![^\W_])", text, re.I) and value not in found:
+            found.append(value)
+    return found
+
+
 def name_span(text: str, pattern: re.Pattern[str] | None, width: int = 80) -> str | None:
     match = pattern.search(text) if pattern else None
     if not match:
@@ -559,3 +580,127 @@ def content_hash(raw: bytes) -> str:
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+MONTHS = {
+    "januar": 1, "jan": 1, "january": 1, "februar": 2, "feb": 2, "february": 2, "mars": 3, "mar": 3, "march": 3,
+    "april": 4, "apr": 4, "mai": 5, "may": 5, "juni": 6, "jun": 6, "june": 6, "juli": 7, "jul": 7, "july": 7,
+    "august": 8, "aug": 8, "september": 9, "sep": 9, "sept": 9, "oktober": 10, "okt": 10, "oct": 10, "october": 10,
+    "november": 11, "nov": 11, "desember": 12, "des": 12, "dec": 12, "december": 12,
+}
+_MONTH_WORDS = "|".join(sorted(MONTHS, key=len, reverse=True))
+DATE_PATTERNS = (
+    (re.compile(r"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)"), "ymd"),
+    (re.compile(r"(?<![\d.])(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)"), "dmy"),
+    (re.compile(rf"(?<!\d)(\d{{1,2}})\.?\s+({_MONTH_WORDS})\.?,?\s+(\d{{4}})(?!\d)", re.I), "d_month_y"),
+    (re.compile(rf"\b({_MONTH_WORDS})\.?\s+(\d{{1,2}}),?\s+(\d{{4}})(?!\d)", re.I), "month_d_y"),
+)
+
+
+def find_date(text: str) -> str | None:
+    """The first full date written in a common Norwegian or English form, as YYYY-MM-DD."""
+    for pattern, kind in DATE_PATTERNS:
+        match = pattern.search(text)
+        if not match:
+            continue
+        a, b, c = match.groups()
+        try:
+            if kind == "ymd":
+                year, month, day = int(a), int(b), int(c)
+            elif kind == "dmy":
+                day, month, year = int(a), int(b), int(c)
+            elif kind == "d_month_y":
+                day, month, year = int(a), MONTHS[b.casefold()], int(c)
+            else:
+                month, day, year = MONTHS[a.casefold()], int(b), int(c)
+            return datetime(year, month, day).date().isoformat()
+        except (ValueError, KeyError):
+            continue
+    return None
+
+
+def _item_date(node: Any) -> str | None:
+    stamp = node.find("time") if hasattr(node, "find") else None
+    if stamp is not None:
+        day = _iso(stamp.get("datetime")) or find_date(stamp.get_text(" ", strip=True))
+        if day:
+            return day
+    return find_date(node.get_text(" ", strip=True)[:400])
+
+
+def listing_items(page_url: str, soup: BeautifulSoup, registered_domain: str, now: datetime, limit: int = MAX_FEED_ITEMS) -> list[dict[str, Any]]:
+    """Dated entries on a company's news listing: links below the listing's own path whose item block shows a date.
+
+    The block climbs from the link to the nearest ancestor that still holds only this article, so a date printed
+    beside a neighbouring article is never borrowed."""
+    base = urllib.parse.urlparse(page_url).path.rstrip("/")
+    items: dict[str, dict[str, Any]] = {}
+    for anchor in soup.select("a[href]"):
+        url = urllib.parse.urljoin(page_url, str(anchor.get("href") or "").strip()).split("#", 1)[0]
+        path = urllib.parse.urlparse(url).path.rstrip("/")
+        if not same_site(url, registered_domain) or not base or not path.startswith(base + "/") or url in items:
+            continue
+        if re.search(r"/(page|side|tag|tags|kategori|category|author|forfatter)/", path + "/", re.I):
+            continue
+        block, day = anchor, None
+        for _ in range(5):
+            parent = block.parent
+            if parent is None or parent.name in {"body", "html", "main"}:
+                break
+            links = {urllib.parse.urljoin(page_url, str(link.get("href") or "")).split("#", 1)[0].rstrip("/")
+                     for link in parent.select("a[href]")}
+            links = {link for link in links if urllib.parse.urlparse(link).path.rstrip("/").startswith(base + "/")}
+            if len(links) > 1:
+                break
+            block = parent
+            day = _item_date(block)
+            if day:
+                break
+        heading = block.find(["h1", "h2", "h3", "h4"]) if block is not anchor else None
+        title = re.sub(r"\s+", " ", (heading.get_text(" ", strip=True) if heading else anchor.get_text(" ", strip=True))).strip()
+        if day and _plausible_date(day, now) and 8 <= len(title) <= 300:
+            items[url] = {"title": title, "url": url, "date": day, "date_type": "listed", "kind": "news",
+                          "method": "news_listing_page", "source_url": page_url}
+    return sorted(items.values(), key=lambda item: item["date"], reverse=True)[:limit]
+
+
+def listing_links(page_url: str, soup: BeautifulSoup, registered_domain: str, limit: int = 3) -> list[str]:
+    """Article links below a listing's own path, in page order (listings usually start with the newest)."""
+    base = urllib.parse.urlparse(page_url).path.rstrip("/")
+    found: list[str] = []
+    for anchor in soup.select("a[href]"):
+        url = urllib.parse.urljoin(page_url, str(anchor.get("href") or "").strip()).split("#", 1)[0]
+        path = urllib.parse.urlparse(url).path.rstrip("/")
+        if (same_site(url, registered_domain) and base and path.startswith(base + "/") and url not in found
+                and not re.search(r"/(page|side|tag|tags|kategori|category|author|forfatter)/", path + "/", re.I)):
+            found.append(url)
+    return found[:limit]
+
+
+def article_entry(page_url: str, soup: BeautifulSoup, now: datetime) -> dict[str, Any] | None:
+    """Title and publication date of one company article, from metadata first and the visible header last."""
+    day, date_type = None, "published"
+    for selector in ('meta[property="article:published_time"]', 'meta[name="date"]', 'meta[itemprop="datePublished"]', 'meta[name="DC.date.issued"]'):
+        node = soup.select_one(selector)
+        if node and node.get("content"):
+            day = _iso(str(node.get("content")))
+            if day:
+                break
+    if not day:
+        for item in structured_activity(page_url, jsonld_blocks(soup), urllib.parse.urlparse(page_url).hostname or "", now):
+            day = item["date"]
+            break
+    if not day:
+        stamp = soup.find("time")
+        if stamp is not None:
+            day = _iso(stamp.get("datetime")) or find_date(stamp.get_text(" ", strip=True))
+    if not day:
+        body = soup.find("article") or soup.find("main") or soup.body
+        day = find_date(re.sub(r"\s+", " ", body.get_text(" ", strip=True))[:600]) if body else None
+        date_type = "shown_on_page"
+    heading = soup.find("h1")
+    og_title = soup.select_one('meta[property="og:title"]')
+    title = re.sub(r"\s+", " ", heading.get_text(" ", strip=True) if heading else str(og_title.get("content") or "") if og_title else "").strip()
+    if not (day and _plausible_date(day, now) and 8 <= len(title) <= 300):
+        return None
+    return {"title": title, "url": page_url, "date": day, "date_type": date_type, "kind": "news", "method": "company_article_page", "source_url": page_url}

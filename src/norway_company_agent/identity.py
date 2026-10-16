@@ -195,6 +195,11 @@ def assess_site_identity(profile: dict[str, Any], website: dict[str, Any]) -> di
     elif value.get("legal_name_span") and corroborating:
         score = 0.96
         reasons.append("the legal name and a registry fact appear on the site: " + corroborating[0])
+    elif value.get("full_legal_name_span") and value.get("registry_place_matches") and (
+            origin != "legal_name_domain_guess" or str(value.get("registered_domain") or "").endswith(".no")):
+        score = 0.93
+        reasons.append("the full registered name, legal form included, and the registered place ("
+                       + ", ".join(value["registry_place_matches"][:2]) + ") appear on the site")
     elif origin == "registry_website" and name_exact:
         score = reference["score"]
         reasons.extend(reference["reasons"])

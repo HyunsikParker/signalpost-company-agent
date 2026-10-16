@@ -26,11 +26,16 @@ from .site_research import (
     corroborations,
     fetch_text,
     jsonld_blocks,
+    article_entry,
+    full_legal_name_pattern,
     legal_name_pattern,
+    listing_items,
+    listing_links,
     name_span,
     org_number_span,
     organisation_numbers_in,
     parse_feed,
+    place_corroborations,
     parse_sitemap,
     same_site,
     slug_title,
@@ -126,7 +131,8 @@ def crawl_site(
     try:
         assert_public_url(normalized)
     except ValueError as exc:
-        return evidence("website", "blocked", source_class, normalized, note=str(exc)), []
+        status = "not_found" if "did not resolve" in str(exc) else "blocked"
+        return evidence("website", status, source_class, normalized, note=str(exc)), []
     raw, final_url, content_type, error = fetch_text(normalized, SAFE_OPENER, timeout=min(timeout, max(2.0, deadline.left())), max_bytes=HOME_LIMIT, log=log)
     if raw is None and not error.startswith(("HTTP", "robots")) and normalized.startswith("https://") and "://" not in supplied:
         normalized = "http://" + normalized[len("https://"):]
@@ -197,10 +203,17 @@ def crawl_site(
             }
             break
     corroborating = []
+    places: list[str] = []
+    full_pattern = full_legal_name_pattern(legal_name)
+    full_span = None
     for page in pages:
         for item in corroborations(page["text"], registry_row):
             if item not in corroborating:
                 corroborating.append(item)
+        for place in place_corroborations(page["text"], registry_row, legal_name):
+            if place not in places:
+                places.append(place)
+        full_span = full_span or name_span(page["text"], full_pattern)
 
     social = list(_social_links(final_url, soup))
     for page in pages[1:]:
@@ -236,6 +249,8 @@ def crawl_site(
         "identity_proof": proof,
         "registry_corroborations": corroborating,
         "legal_name_span": next((page["name_span"] for page in pages if page["name_span"]), None),
+        "full_legal_name_span": full_span,
+        "registry_place_matches": places,
         "brand_names": brand_names(soup, home["jsonld"]),
     }
     record = evidence(
@@ -298,6 +313,33 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
         add_activity(parse_feed(raw, final or feed_url, domain, now))
         if activity:
             break
+
+    if not activity and home:
+        listings = [page for page in pages if NEWS_PATH.search(urllib.parse.urlparse(page["url"]).path.rstrip("/") + "/")]
+        if not listings and not deadline.expired():
+            linked = [urllib.parse.urljoin(home["url"], str(anchor.get("href") or "")) for anchor in home["soup"].select("a[href]")]
+            linked = [url for url in linked if same_site(url, domain) and NEWS_PATH.search(urllib.parse.urlparse(url).path.rstrip("/") + "/")]
+            listing_url = min(linked, key=len) if linked else None
+            if listing_url:
+                raw, final, kind, error = fetch_text(listing_url, SAFE_OPENER, timeout=min(timeout, max(2.0, deadline.left())), max_bytes=PAGE_LIMIT, log=log)
+                if raw is not None and "html" in kind.casefold():
+                    soup = BeautifulSoup(raw.decode("utf-8", errors="replace"), "lxml")
+                    listings = [{"url": final or listing_url, "soup": soup}]
+                elif error:
+                    errors.append({"url": listing_url, "error": error})
+        for page in listings[:2]:
+            add_activity(listing_items(page["url"], page["soup"], domain, now))
+        if not activity and listings:
+            for article_url in listing_links(listings[0]["url"], listings[0]["soup"], domain):
+                if deadline.expired():
+                    break
+                raw, final, kind, error = fetch_text(article_url, SAFE_OPENER, timeout=min(timeout, max(2.0, deadline.left())), max_bytes=PAGE_LIMIT, log=log)
+                if raw is None or "html" not in kind.casefold():
+                    errors.append({"url": article_url, "error": error or "unsupported content"})
+                    continue
+                entry = article_entry(final or article_url, BeautifulSoup(raw.decode("utf-8", errors="replace"), "lxml"), now)
+                if entry and same_site(entry["url"], domain):
+                    add_activity([entry])
 
     if not activity and home and not deadline.expired():
         origin = "{0.scheme}://{0.netloc}".format(urllib.parse.urlparse(home["url"]))
