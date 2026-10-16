@@ -181,6 +181,10 @@ def normalize_social_url(url: str) -> dict[str, str] | None:
     }[platform]
     if platform == "linkedin":
         parts = parts[:2]
+    elif platform == "facebook":
+        parts = parts[:3] if lowered[0] == "pages" else parts[:1]
+    elif platform in {"instagram", "tiktok"}:
+        parts = parts[:1]
     elif platform == "youtube":
         parts = parts[:1] if parts[0].startswith("@") else parts[:2]
     return {"platform": platform, "url": f"https://{canonical_host}/{'/'.join(parts)}"}

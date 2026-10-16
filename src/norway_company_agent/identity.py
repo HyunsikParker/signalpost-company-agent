@@ -158,3 +158,108 @@ def apply_website_identity_gate(profile: dict[str, Any], website: dict[str, Any]
         "assessment": assessment,
         "quarantined_social_links": len(original) - len(value["social_links"]),
     }
+
+
+GROUP_WORDS = ("group", "gruppen", "konsern", "holding", "asa")
+
+
+def _compact(value: Any) -> str:
+    return "".join(_tokens(value))
+
+
+def assess_site_identity(profile: dict[str, Any], website: dict[str, Any]) -> dict[str, Any]:
+    """Publication gate for a crawled company site, whichever way the site was found.
+
+    An organisation number shown on a single-company page is exact proof. Otherwise the legal name must match
+    the homepage identity (the reference rule), and a site found without an official link to the entity also
+    needs a registry fact (phone, street address or e-mail) repeated on its pages.
+    """
+    value = website.get("value") or {}
+    proof = value.get("identity_proof") or {}
+    origin = value.get("discovery_origin") or "registry_website"
+    others = int(proof.get("other_organisation_numbers_on_page") or 0) if proof else 0
+    blanked = {**value, "identity_text_excerpt": "", "pages": [{**page, "identity_text_excerpt": ""} for page in value.get("pages", [])]}
+    reference = assess_website_identity({**profile, "evidence": {**profile.get("evidence", {}), "website": {**website, "value": blanked}}})
+    name_exact = reference["score"] >= 0.95
+    parked_or_club = reference["score"] <= 0.3 and any("parked" in reason or "sports-club" in reason for reason in reference["reasons"])
+    corroborating = list(value.get("registry_corroborations") or [])
+    reasons: list[str] = []
+    if parked_or_club:
+        score, reasons = reference["score"], list(reference["reasons"])
+    elif proof and others == 0:
+        score = 1.0
+        reasons.append(f"exact organisation number appears on company page {proof.get('page_url')}")
+    elif proof and others <= 2 and name_exact:
+        score = 0.97
+        reasons.append("organisation number appears beside other entities' numbers, and the legal name matches the homepage")
+    elif value.get("legal_name_span") and corroborating:
+        score = 0.96
+        reasons.append("the legal name and a registry fact appear on the site: " + corroborating[0])
+    elif origin == "registry_website" and name_exact:
+        score = reference["score"]
+        reasons.extend(reference["reasons"])
+    elif origin == "registry_email_domain" and name_exact:
+        score = 0.95
+        reasons.append("site is the domain of the registry e-mail address and the legal name matches the homepage")
+    elif origin == "legal_name_domain_guess" and name_exact and corroborating:
+        score = 0.95
+        reasons.append("legal name matches the homepage and a registry fact repeats on the site: " + corroborating[0])
+    else:
+        score = min(reference["score"], 0.85)
+        reasons.extend(reference["reasons"])
+        if proof:
+            reasons.append(f"organisation number shares the page with {others} other organisation numbers")
+        if origin != "registry_website":
+            reasons.append("site was found by candidate generation and lacks an organisation number or registry corroboration")
+    status = "exact" if score >= 0.9 else "review" if score >= 0.8 else "related_or_uncertain"
+    return {
+        "status": status,
+        "score": score,
+        "publishable": status == "exact",
+        "legal_name_tokens": reference["legal_name_tokens"],
+        "matched_tokens": reference["matched_tokens"],
+        "reasons": reasons,
+        "registry_corroborations": corroborating,
+        "discovery_origin": origin,
+        "method": "deterministic_org_number_name_registry_evidence_v3",
+    }
+
+
+def assess_owned_profile(profile: dict[str, Any], link: dict[str, str], website_value: dict[str, Any], site_exact: bool) -> dict[str, Any]:
+    """A social profile linked from a verified company site. The handle must still name the company: its legal
+    name (reference rule), the verified site's domain label, or the site's declared brand name."""
+    reference = assess_social_identity(profile, link)
+    parsed = urllib.parse.urlparse(link.get("url") or "")
+    handle = _compact(urllib.parse.unquote(parsed.path))
+    legal = _compact(profile.get("name"))
+    group_word = next((word for word in GROUP_WORDS if word in handle and word not in legal and word not in _compact(website_value.get("registered_domain"))), None)
+    if group_word:
+        return {**reference, "identity_score": 0.3, "publishable": False,
+                "reason": f"handle names a '{group_word}' entity that the legal name does not; likely a parent or group profile",
+                "method": "deterministic_owned_profile_identity_v2"}
+    if not site_exact or reference["publishable"]:
+        return {**reference, "publishable": site_exact and reference["publishable"]}
+    label = _compact(str(website_value.get("registered_domain") or "").rsplit(".", 1)[0])
+    brands = [_compact(name) for name in website_value.get("brand_names") or []]
+    if len(label) >= 4 and label in handle:
+        return {**reference, "identity_score": 0.95, "publishable": True, "reason": "handle contains the verified company site's domain name", "method": "deterministic_owned_profile_identity_v2"}
+    brand = next((name for name in brands if len(name) >= 4 and name in handle), None)
+    if brand:
+        return {**reference, "identity_score": 0.92, "publishable": True, "reason": "handle contains the brand name the verified site declares", "method": "deterministic_owned_profile_identity_v2"}
+    return {**reference, "publishable": False}
+
+
+def gate_company_site(profile: dict[str, Any], website: dict[str, Any]) -> dict[str, Any]:
+    """Attach the site and profile assessments; only exact sites publish their profile links."""
+    if website.get("status") != "available":
+        return website
+    value = website.get("value") or {}
+    assessment = assess_site_identity(profile, website)
+    value["identity_assessment"] = assessment
+    original = list(value.get("discovered_social_links") or value.get("social_links") or [])
+    value["discovered_social_links"] = original
+    assessments = [assess_owned_profile(profile, link, value, assessment["publishable"]) for link in original]
+    value["social_link_assessments"] = assessments
+    value["social_links"] = [{"platform": item["platform"], "url": item["url"]} for item in assessments if item["publishable"]]
+    website["value"] = value
+    return website

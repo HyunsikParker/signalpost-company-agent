@@ -1,115 +1,79 @@
-# Signalpost reference agent
+# Signalpost company research agent
 
-This is a runnable starting point for the Signalpost company-research challenge. It is intentionally a solid baseline, not a winning submission.
+Give the agent a batch of Norwegian organisation numbers. For each company it returns one terminal envelope: the official registry record, filed accounts, leadership, registered workplaces and group links, plus what the company publishes about itself. The external half covers a verified official website, company-owned social profiles, role contact addresses, current job ads and dated activity. Every claim carries its source URL, retrieval time, content hash and the text span that supports it. A source that was checked and had nothing is reported as `not_available`, never as zero.
 
-The public universe contains 411,160 eligible companies. Run the starter on 100 companies before submitting. Larger local tests, including 1,000 or more companies, are encouraged but their precomputed profiles are not submitted or scored.
+The agent is built on the Builderr Signalpost starter kit. The starter's registry, accounts, roles, group and sub-unit modules are unchanged; the website identity gate, site discovery, signal extraction, job-ad connector, claim contract and batch runner are new.
 
-## What it already does
+## Run it
 
-- reads a batch of Norwegian organisation numbers;
-- anchors identity in the Brønnøysund bulk registry;
-- fetches official financials, roles, group links and registered workplaces;
-- visits the registry-listed website and rejects weak entity matches;
-- emits one terminal JSONL envelope per input;
-- records sources, retrieval times, content hashes, request counts and latency;
-- supports checkpoint/resume and a deterministic refresh replay;
-- includes examples for external-footprint discovery and an evidence-bounded research agent.
-
-## First run: try one saved example
-
-Requires Python 3.12+. Open a terminal inside this extracted folder.
-
-Before downloading company data or running a full crawl, try the bundled public
-sample. It uses saved responses: no API key, registry download or live web requests.
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-python3 scripts/run_refresh_replay.py \
-  --manifest tests/fixtures/refresh-snapshots.json \
-  --output out/refresh-demo.json
-```
-
-Open `out/refresh-demo.json`. The `events` list shows what changed between two
-versions of one company profile and the source evidence for each change. The sample
-should find two expected changes, no false changes, and no extra changes when the
-same data is checked again.
-
-The report's `qualification_passed` field refers only to this public sample check.
-It does not qualify an entry for the competition or prove live information coverage.
-The printed request counts are reads from saved responses, not network calls.
-
-## Next: research live companies
-
-Requires Python 3.12+ and `uv`. This step downloads data and makes live requests.
-The manifest selector can create a local test batch of any size. Use 100 rows for the recommended smoke test before trying a larger batch.
-
-```bash
-uv sync
-curl -L 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/csv' -o brreg-enheter.csv
-curl -L 'https://builderr.ai/signalpost-company-universe-2025.jsonl.gz' -o signalpost-universe.jsonl.gz
-
-uv run python select_entry_batch.py \
-  --universe signalpost-universe.jsonl.gz \
-  --count 100 \
-  --output entry-companies.jsonl
-
-# Use the 100-company batch as your smoke test.
-cp entry-companies.jsonl smoke-companies.jsonl
-
+uv sync --frozen
 uv run python scripts/run_competition_batch.py \
-  --organisations smoke-companies.jsonl \
-  --bulk brreg-enheter.csv \
-  --profiles-output out/smoke-profiles.jsonl \
-  --output out/smoke-envelopes.jsonl \
-  --report out/smoke-report.json \
-  --run-id smoke-001 \
-  --expected-count 100
-
-# You may test at larger scale locally, but Builderr supplies the official batch for scoring.
-uv run python scripts/run_competition_batch.py \
-  --organisations entry-companies.jsonl \
-  --bulk brreg-enheter.csv \
-  --profiles-output out/profiles.jsonl \
+  --organisations batch.jsonl \
+  --bulk brreg-enheter.csv.gz \
   --output out/envelopes.jsonl \
-  --report out/run-report.json \
-  --run-id local-001 \
-  --expected-count 1000
-
-uv run --with pytest pytest -q
+  --profiles-output out/profiles.jsonl \
+  --report out/report.json \
+  --run-id daily-001
 ```
 
-The published archive was clean-room verified on August 24, 2026: 104 tests and 5 subtests passed, followed by a one-company live BRREG smoke run with one terminal envelope, five requests and zero silent drops.
+- `--organisations` accepts JSONL (`{"organisation_number": "…"}` per line), a JSON list, or plain text with one number per line.
+- `--bulk` is the Brønnøysund entity snapshot (`enheter/lastned/csv`). A company missing from the snapshot is read from the live registry instead of stopping the run.
+- `--expected-count` is optional. Every input row gets exactly one envelope; invalid or repeated rows are reported in `report.json`.
+- `--previous out/profiles.jsonl` compares this run with an earlier one and writes typed changes into each envelope.
+- `--time-budget-minutes` (default 50, or `SIGNALPOST_TIME_BUDGET_MINUTES`) bounds the whole run. After 70% of it, new companies skip candidate discovery; at the limit, unfinished companies are closed as `budget_exhausted` and the file is still complete.
+- `--workers` (default 16) sets company concurrency; `--registry-workers` (default 8) caps concurrent requests to data.brreg.no.
 
-Increase `--count` and `--expected-count` together for a larger local test. The 100-row smoke test above is practice only; Builderr supplies the companies for every official run.
+Tests: `uv run --with pytest pytest -q`.
 
-## The improvement loop
+## What each envelope contains
 
-1. Treat the organisation number as the anchor.
-2. Generate site/profile candidates from official data, the company site, lawful search providers and named people.
-3. Save every candidate and the evidence for or against it.
-4. Publish only exact-entity matches. Parent, brand, franchise and similarly named companies are not exact.
-5. Crawl static HTML first. Escalate to a browser only when a deterministic completeness check fails.
-6. Measure added supported coverage, wrong-company claims, runtime, requests and cost.
-7. Promote a strategy only when it improves coverage without weakening the accuracy gates.
-8. Freeze strategies and thresholds before the daily evaluation run.
+The envelope keeps the starter's fields (`run_id`, `organisation_number`, `state`, `modules`, `profile`) and adds the claim contract:
 
-The strongest differentiator is external evidence that remains exact and auditable: official company pages, company-owned profiles, jobs, dated activity, ratings/reviews and permitted public signals. Do not trade accuracy for volume.
+| Field | Content |
+|---|---|
+| `run` | run id, start and end time, terminal status |
+| `claims` | `family`, `field`, `value`, `availability`, `confidence`, `evidence_ids`, and `reporting_period` or `effective_at` where one exists |
+| `evidence` | `id`, `source_url`, `source_class`, `retrieved_at`, `content_sha256`, `claim_span` |
+| `summary` | a short description built only from published claims, with the evidence ids it rests on and the unknowns |
+| `changes` | material differences from `--previous`, with old and new evidence hashes |
+| `errors` | per-stage failures; a failing source never removes the envelope |
+| `operations` | requests, runtime and third-party cost (always 0) |
 
-## Important source rule
+Availability is one of `available`, `not_available`, `blocked`, `not_applicable`, `ambiguous` or `failed`. A site that was reached but could not be tied to the exact entity is `ambiguous`.
 
-Open-source code does not grant permission to scrape a platform. Follow each source's terms, robots policy, rate limits and licence. LinkedIn, Meta and Indeed are useful identity/discovery targets, but direct automated collection may be restricted. Use permitted APIs, licensed providers, company-owned outbound links, or return `blocked`/`not_available`.
+Claim families: `legal_identity`, `annual_accounts`, `leadership`, `workplaces`, `group`, `official_website`, `public_brand`, `company_description`, `company_profiles`, `contact`, `hiring`, `public_activity`.
 
-Read `docs/competition-control-loop.md`, `docs/external-connectors.md` and the public source policy before adding connectors.
+## How a website becomes "official"
 
-## Submission contract
+Candidates are tried in this order: the website in the registry, the domain of the registry e-mail address (free-mail and shared-administrator domains are skipped), then domains built from the legal name (`sandneselektriske.no`, `sandnes-elektriske.no`, transliterated variants). Search engines are not used. A candidate is published only when one of these holds:
 
-Submit a repository with:
+1. The company's organisation number (MOD11-valid) appears on the homepage or on a contact, about or privacy page that shows no other organisation number.
+2. The legal name appears on the site together with a registry fact for the same company: its phone number, street address or registry e-mail.
+3. The site is the registry website or the registry e-mail domain, and the legal name matches the homepage title, description, host name or structured organisation name (the starter's rule).
 
-- a 100-company smoke-test result or report;
-- one documented command that accepts a JSONL batch of organisation numbers;
-- exactly one terminal envelope per input;
-- pinned dependencies and reproducible setup;
-- a previous-snapshot input and material-change output;
-- a machine-readable run report with runtime, request count and third-party cost;
-- declared models, APIs, licences and source-rights assumptions.
+A legal-name domain guess never publishes on name similarity alone. Parked domains, for-sale pages and franchise or group pages listing several companies' numbers do not pass. Social profiles are published only from a site that passed, and only when the handle names the company: its legal name, the verified domain name or the brand the site declares.
 
-Email the repository URL, run command, models/APIs and expected cost per 100-company run to `submit@builderr.ai`.
+## Sources and rights
+
+| Source | Use | Basis |
+|---|---|---|
+| Brønnøysundregistrene: Enhetsregisteret, roles, sub-units, group structure, Regnskapsregisteret | identity, leadership, workplaces, group, filed accounts | open data under NLOD 2.0 |
+| Company websites (registry-listed or proven by the rules above) | official site, brand, description, profile links, role mailboxes, careers pages, feeds and sitemaps | the company's own public pages; robots.txt is honoured per host, and every URL must resolve to a public address |
+| arbeidsplassen.nav.no (Nav's public job database) | current job ads tied to the company's organisation number or one of its sub-units | public pages and the site's JSON search; robots.txt allows all paths; Nav's job-ad terms let anyone republish ads. Only title, dates, location, ad URL and employer number are kept; contact persons are not read |
+
+No LinkedIn, Meta, Glassdoor, Indeed or search-engine data is collected. No API key or paid service is used, so the expected third-party cost of an official batch is $0. Outbound requests identify themselves as `builderr-signalpost-poc/0.1 (+https://builderr.ai)`.
+
+## Limitations
+
+- A company with no registry website, no company-domain e-mail and a site that does not show its organisation number, phone or address stays without a verified website.
+- Job ads are found when Nav lists the employer under the legal name or a registered sub-unit name. Ads that only exist on other boards, or are posted under a brand name, are missed.
+- Activity comes from the company's own RSS/Atom feeds, schema.org article data and news sitemaps. Sitemap items are dated by `lastmod` and labelled `last_modified`, and their titles come from the URL slug.
+- JavaScript-only sites are fetched as static HTML and may yield little.
+- Personal e-mail addresses on company sites are not published, only shared role mailboxes such as `post@` or `info@`.
+
+## Smoke test
+
+The 100-company smoke test is in [`smoke/`](smoke/): the run report, the envelopes and a short summary. It used the starter's `select_entry_batch.py` with its default seed.
