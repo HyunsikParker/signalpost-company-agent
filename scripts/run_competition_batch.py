@@ -170,7 +170,7 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--previous", help="Profiles JSONL from an earlier run; material changes are reported per envelope")
     parser.add_argument("--time-budget-minutes", type=float, default=float(os.environ.get("SIGNALPOST_TIME_BUDGET_MINUTES", "50")))
-    parser.add_argument("--company-budget-seconds", type=float, default=45.0)
+    parser.add_argument("--company-budget-seconds", type=float, default=60.0)
     parser.add_argument("--no-discovery", action="store_true", help="Only crawl registry-listed websites")
     parser.add_argument("--nav-days", type=int, default=60, help="Look-back window for Nav's job feed; 0 disables the connector")
     parser.add_argument("--modules", default=DEFAULT_MODULES)

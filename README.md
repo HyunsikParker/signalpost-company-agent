@@ -52,7 +52,8 @@ Candidates are tried in this order: the website in the registry, the domain of t
 
 1. The company's organisation number (MOD11-valid) appears on the homepage or on a contact, about or privacy page that shows no other organisation number.
 2. The legal name appears on the site together with a registry fact for the same company: its phone number, street address or registry e-mail.
-3. The site is the registry website or the registry e-mail domain, and the legal name matches the homepage title, description, host name or structured organisation name (the starter's rule).
+3. The complete registered name, legal form included ("Finnmark Utleie AS"), appears together with the registered municipality, postal place or postcode. A place that is part of the company name does not count, and a domain guessed from the name must be a `.no` domain.
+4. The site is the registry website or the registry e-mail domain, and the legal name matches the homepage title, description, host name or structured organisation name (the starter's rule).
 
 A legal-name domain guess never publishes on name similarity alone. Parked domains, for-sale pages and franchise or group pages listing several companies' numbers do not pass. Social profiles are published only from a site that passed, and only when the handle names the company: its legal name, the verified domain name or the brand the site declares.
 
@@ -70,7 +71,7 @@ No LinkedIn, Meta, Glassdoor, Indeed or search-engine data is collected. No API 
 
 - A company with no registry website, no company-domain e-mail and a site that does not show its organisation number, phone or address stays without a verified website.
 - Job ads are found when Nav lists the employer under the legal name or a registered sub-unit name. Ads that only exist on other boards, or are posted under a brand name, are missed.
-- Activity comes from the company's own RSS/Atom feeds, schema.org article data and news sitemaps. Sitemap items are dated by `lastmod` and labelled `last_modified`, and their titles come from the URL slug.
+- Activity comes from the company's own RSS/Atom feeds, schema.org article data, news listing pages and article pages, and news sitemaps. Sitemap items are dated by `lastmod` and labelled `last_modified`, and their titles come from the URL slug. Placeholder posts ("Hello world!") and items dated before the company was founded (theme demo content) are dropped.
 - JavaScript-only sites are fetched as static HTML and may yield little.
 - Personal e-mail addresses on company sites are not published, only shared role mailboxes such as `post@` or `info@`.
 

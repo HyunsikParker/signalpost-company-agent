@@ -43,8 +43,10 @@ LEGAL_SUFFIXES = {
 NEWS_PATH = re.compile(r"/(nyheter|nyhet|aktuelt|news|blogg|blog|artikler|artikkel|presse|press|innlegg|arkiv)/", re.I)
 CAREER_SEGMENTS = {
     "karriere", "career", "careers", "jobs", "jobb", "jobber", "stillinger", "ledige-stillinger", "ledigestillinger", "ledige-jobber",
-    "jobbe-hos-oss", "jobb-hos-oss", "jobbmuligheter", "vacancies", "join-us", "work-with-us", "rekruttering", "arbeid-hos-oss",
+    "jobbe-hos-oss", "jobb-hos-oss", "jobbmuligheter", "vacancies", "join-us", "work-with-us", "arbeid-hos-oss",
 }
+# Placeholder posts that site builders and themes install; they say nothing about the company.
+PLACEHOLDER_TITLES = {"hello world", "hei verden", "hallo verden", "hallo welt", "sample page", "eksempelside", "uncategorized"}
 CAREER_TEXTS = {
     "karriere", "jobb hos oss", "jobbe hos oss", "ledige stillinger", "stillinger", "careers", "career", "jobs", "ledige jobber",
     "jobbmuligheter", "join us", "work with us", "jobb", "vacancies", "jobb i", "bli med på laget",
@@ -704,3 +706,16 @@ def article_entry(page_url: str, soup: BeautifulSoup, now: datetime) -> dict[str
     if not (day and _plausible_date(day, now) and 8 <= len(title) <= 300):
         return None
     return {"title": title, "url": page_url, "date": day, "date_type": date_type, "kind": "news", "method": "company_article_page", "source_url": page_url}
+
+
+def credible_activity(items: list[dict[str, Any]], founded: str | None) -> tuple[list[dict[str, Any]], int]:
+    """Drop placeholder posts and anything dated before the company existed (theme demo content)."""
+    kept = []
+    for item in items:
+        title = re.sub(r"[^\w ]+", "", str(item.get("title") or "").casefold()).strip()
+        if title in PLACEHOLDER_TITLES:
+            continue
+        if founded and str(item.get("date") or "") < founded[:10]:
+            continue
+        kept.append(item)
+    return kept, len(items) - len(kept)

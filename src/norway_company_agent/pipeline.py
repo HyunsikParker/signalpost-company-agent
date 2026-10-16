@@ -8,7 +8,7 @@ from typing import Any
 from .evidence import evidence
 from .identity import gate_company_site
 from .site_crawl import Deadline, collect_signals, crawl_site
-from .site_research import RequestLog, candidate_sites, resolving_host
+from .site_research import RequestLog, candidate_sites, credible_activity, resolving_host
 
 EXTERNAL_MODULES = ("website_discovery", "company_profiles", "jobs", "activity", "site_contacts")
 REGISTRY_SOURCE = "https://data.brreg.no/enhetsregisteret/api/enheter"
@@ -49,7 +49,7 @@ def _attempt(record: dict[str, Any], domain: str, origin: str) -> dict[str, Any]
 def research_company(
     profile: dict[str, Any],
     *,
-    budget_seconds: float = 45.0,
+    budget_seconds: float = 60.0,
     discovery: bool = True,
     signals: bool = True,
     max_candidates: int = 5,
@@ -150,13 +150,14 @@ def research_company(
                "site_checked": published is not None},
         note=None if jobs else ("No current job posting on the verified site or the careers page it links" if published else site_note),
     )
-    activity = found.get("activity") or []
+    activity, dropped = credible_activity(found.get("activity") or [], row.get("stiftelsesdato") or row.get("registreringsdatoEnhetsregisteret") or row.get("registreringsdatoenhetsregisteret"))
     records["activity"] = evidence(
         "activity",
         "available" if activity else "not_found",
         "company_owned_news_and_feeds",
         site_url,
-        value={"items": activity, "feeds_checked": found.get("feeds_checked", []), "sitemaps_checked": found.get("sitemaps_checked", [])},
+        value={"items": activity, "feeds_checked": found.get("feeds_checked", []), "sitemaps_checked": found.get("sitemaps_checked", []),
+               "dropped_placeholder_or_pre_founding": dropped},
         note=None if activity else ("No dated item found in the verified site's pages, feeds or sitemap" if published else site_note),
     )
     site_contacts = found.get("contacts") or {"emails": [], "phones": []}

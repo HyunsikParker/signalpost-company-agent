@@ -208,6 +208,16 @@ class NewsListingTest(unittest.TestCase):
                          [("Ny avtale med kommunen", "2026-10-12"), ("Sommerstengt i juli", "2026-08-01")])
 
 
+class ActivityFilterTest(unittest.TestCase):
+    def test_placeholder_and_pre_founding_posts_are_dropped(self):
+        from norway_company_agent.site_research import credible_activity
+        items = [{"title": "Hello world!", "date": "2023-05-01"}, {"title": "Silvertooth Opens New Gym", "date": "2015-07-06"},
+                 {"title": "Ny avtale med kommunen", "date": "2024-03-01"}]
+        kept, dropped = credible_activity(items, "2022-11-28")
+        self.assertEqual([item["title"] for item in kept], ["Ny avtale med kommunen"])
+        self.assertEqual(dropped, 2)
+
+
 class NavJobsTest(unittest.TestCase):
     def test_name_key_ignores_legal_form(self):
         self.assertEqual(name_key("TAXI TR 1807 AS"), name_key("Taxi TR 1807"))
