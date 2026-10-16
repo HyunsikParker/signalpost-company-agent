@@ -212,9 +212,9 @@ class ActivityFilterTest(unittest.TestCase):
     def test_placeholder_and_pre_founding_posts_are_dropped(self):
         from norway_company_agent.site_research import credible_activity
         items = [{"title": "Hello world!", "date": "2023-05-01"}, {"title": "Silvertooth Opens New Gym", "date": "2015-07-06"},
-                 {"title": "Ny avtale med kommunen", "date": "2024-03-01"}]
+                 {"title": "Vi åpner snart", "date": "2022-09-30"}, {"title": "Ny avtale med kommunen", "date": "2024-03-01"}]
         kept, dropped = credible_activity(items, "2022-11-28")
-        self.assertEqual([item["title"] for item in kept], ["Ny avtale med kommunen"])
+        self.assertEqual([item["title"] for item in kept], ["Vi åpner snart", "Ny avtale med kommunen"])
         self.assertEqual(dropped, 2)
 
 

@@ -19,7 +19,7 @@ import urllib.request
 import urllib.robotparser
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any
 
@@ -708,14 +708,19 @@ def article_entry(page_url: str, soup: BeautifulSoup, now: datetime) -> dict[str
     return {"title": title, "url": page_url, "date": day, "date_type": date_type, "kind": "news", "method": "company_article_page", "source_url": page_url}
 
 
-def credible_activity(items: list[dict[str, Any]], founded: str | None) -> tuple[list[dict[str, Any]], int]:
-    """Drop placeholder posts and anything dated before the company existed (theme demo content)."""
+def credible_activity(items: list[dict[str, Any]], founded: str | None, margin_days: int = 730) -> tuple[list[dict[str, Any]], int]:
+    """Drop placeholder posts and items dated more than two years before the company was founded.
+
+    A business often goes online a few months before it is registered; theme demo content is typically years older."""
+    cutoff = None
+    if founded and re.match(r"\d{4}-\d{2}-\d{2}", founded):
+        cutoff = (datetime.fromisoformat(founded[:10]) - timedelta(days=margin_days)).date().isoformat()
     kept = []
     for item in items:
         title = re.sub(r"[^\w ]+", "", str(item.get("title") or "").casefold()).strip()
         if title in PLACEHOLDER_TITLES:
             continue
-        if founded and str(item.get("date") or "") < founded[:10]:
+        if cutoff and str(item.get("date") or "") < cutoff:
             continue
         kept.append(item)
     return kept, len(items) - len(kept)
