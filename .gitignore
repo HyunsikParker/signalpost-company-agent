@@ -6,3 +6,4 @@ __pycache__/
 .pytest_cache/
 *.csv
 *.jsonl.gz
+!smoke/*.jsonl.gz
