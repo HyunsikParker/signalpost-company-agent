@@ -216,6 +216,18 @@ class ActivityFilterTest(unittest.TestCase):
         kept, dropped = credible_activity(items, "2022-11-28")
         self.assertEqual([item["title"] for item in kept], ["Vi åpner snart", "Ny avtale med kommunen"])
         self.assertEqual(dropped, 2)
+        demo = [{"title": "Mastering the First Impression: Your intriguing post title goes here", "date": "2025-02-20"}]
+        self.assertEqual(credible_activity(demo, "2025-02-26")[0], [])
+
+    def test_generic_article_markup_counts_only_on_news_paths(self):
+        from norway_company_agent.site_research import structured_activity
+        blocks = [{"@graph": [
+            {"@type": "Article", "headline": "Om oss - Firma AS", "datePublished": "2026-01-14", "url": "https://firma.no/om-oss/"},
+            {"@type": "Article", "headline": "&#xC5;pner ny butikk", "datePublished": "2026-02-01", "url": "https://firma.no/nyheter/apner-ny-butikk/"},
+            {"@type": "BlogPosting", "headline": "Sommerstengt", "datePublished": "2026-06-20", "url": "https://firma.no/sommerstengt/"},
+            {"@type": "Article", "headline": "Hjem", "datePublished": "2026-01-06", "url": "https://firma.no/"}]}]
+        items = structured_activity("https://firma.no/", blocks, "firma.no", NOW)
+        self.assertEqual([item["title"] for item in items], ["Åpner ny butikk", "Sommerstengt"])
 
 
 class NavJobsTest(unittest.TestCase):

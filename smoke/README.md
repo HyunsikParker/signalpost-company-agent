@@ -1,12 +1,12 @@
 # 100-company smoke test
 
-Run `smoke-2026-10-16`, 16 October 2026, 18:16–18:21 UTC.
+Run `smoke-2026-10-16-v2`, 16 October 2026, 19:00–19:05 UTC, on the version 2 code.
 
 - Input: [`companies.jsonl`](companies.jsonl), 100 companies drawn from the public universe by `select_entry_batch.py` with its default seed.
 - Output: [`envelopes.jsonl.gz`](envelopes.jsonl.gz), one terminal envelope per company, and the run report [`report.json`](report.json).
 - Result: 100 of 100 envelopes, every module state terminal, no company with an error, validation passed.
 - Cost: 753 company-level requests plus 126 Nav job-feed requests; no paid API, so $0.
-- Time: 271 s wall clock with 16 workers. The per-company work finished in about 95 s (p50 10.4 s, p95 34.2 s per company); the rest was the Nav feed index, which runs in parallel and covers 60 days in about 4.5 minutes regardless of batch size.
+- Time: 264 s wall clock with 16 workers. That includes the Nav job-feed index (60 days, 125 pages), which is built in parallel with the company work and takes about the same time whatever the batch size. Per company: p50 10.3 s, p95 35.2 s.
 
 The registry snapshot for this run was built with `scripts/build_local_bulk.py`, which reads the same open Enhetsregisteret API row by row, because the full bulk download kept dropping on this connection. Official runs use the snapshot Builderr supplies.
 

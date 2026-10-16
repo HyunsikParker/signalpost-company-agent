@@ -7,6 +7,7 @@ same public-URL and robots checks as the registry-website crawl. Nothing is infe
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import re
 import socket
@@ -47,6 +48,7 @@ CAREER_SEGMENTS = {
 }
 # Placeholder posts that site builders and themes install; they say nothing about the company.
 PLACEHOLDER_TITLES = {"hello world", "hei verden", "hallo verden", "hallo welt", "sample page", "eksempelside", "uncategorized"}
+PLACEHOLDER_TEXT = re.compile(r"title goes here|lorem ipsum|dolor sit amet|sample post|example post|eksempelinnlegg|demo post|your (?:awesome|attractive|intriguing|catchy) ", re.I)
 CAREER_TEXTS = {
     "karriere", "jobb hos oss", "jobbe hos oss", "ledige stillinger", "stillinger", "careers", "career", "jobs", "ledige jobber",
     "jobbmuligheter", "join us", "work with us", "jobb", "vacancies", "jobb i", "bli med på laget",
@@ -412,8 +414,12 @@ def structured_activity(page_url: str, blocks: list[Any], registered_domain: str
     items = []
     for node in _walk_types(blocks, {"Article", "NewsArticle", "BlogPosting", "PressRelease", "Event"}):
         day = _iso(node.get("datePublished") or node.get("startDate") or node.get("dateCreated"))
-        title = _text(node.get("headline") or node.get("name"))
+        title = html.unescape(_text(node.get("headline") or node.get("name")))
         url = urllib.parse.urljoin(page_url, _text(node.get("url")) or page_url)
+        path = urllib.parse.urlparse(url).path.rstrip("/") + "/"
+        kinds = set(node.get("@type") if isinstance(node.get("@type"), list) else [node.get("@type")])
+        if path == "/" or (kinds <= {"Article"} and not NEWS_PATH.search(path)):
+            continue  # SEO plugins stamp a generic Article date on ordinary pages; only news paths count
         if title and _plausible_date(day, now) and same_site(url, registered_domain):
             items.append({"title": title[:300], "url": url, "date": day, "date_type": "published",
                           "kind": "event" if "Event" in str(node.get("@type")) else "article",
@@ -464,7 +470,7 @@ def parse_feed(raw: bytes, feed_url: str, registered_domain: str, now: datetime)
                 values.setdefault("link", child.get("href") or "")
             elif child.text and name not in values:
                 values[name] = child.text.strip()
-        title = re.sub(r"\s+", " ", values.get("title", "")).strip()
+        title = html.unescape(re.sub(r"\s+", " ", values.get("title", ""))).strip()
         link = urllib.parse.urljoin(feed_url, values.get("link", ""))
         day = _iso(values.get("pubDate") or values.get("published") or values.get("updated") or values.get("date"))
         if title and link and _plausible_date(day, now) and same_site(link, registered_domain):
@@ -659,7 +665,7 @@ def listing_items(page_url: str, soup: BeautifulSoup, registered_domain: str, no
             if day:
                 break
         heading = block.find(["h1", "h2", "h3", "h4"]) if block is not anchor else None
-        title = re.sub(r"\s+", " ", (heading.get_text(" ", strip=True) if heading else anchor.get_text(" ", strip=True))).strip()
+        title = html.unescape(re.sub(r"\s+", " ", (heading.get_text(" ", strip=True) if heading else anchor.get_text(" ", strip=True)))).strip()
         if day and _plausible_date(day, now) and 8 <= len(title) <= 300:
             items[url] = {"title": title, "url": url, "date": day, "date_type": "listed", "kind": "news",
                           "method": "news_listing_page", "source_url": page_url}
@@ -718,7 +724,7 @@ def credible_activity(items: list[dict[str, Any]], founded: str | None, margin_d
     kept = []
     for item in items:
         title = re.sub(r"[^\w ]+", "", str(item.get("title") or "").casefold()).strip()
-        if title in PLACEHOLDER_TITLES:
+        if title in PLACEHOLDER_TITLES or PLACEHOLDER_TEXT.search(str(item.get("title") or "")):
             continue
         if cutoff and str(item.get("date") or "") < cutoff:
             continue
