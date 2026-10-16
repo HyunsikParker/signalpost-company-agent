@@ -27,4 +27,4 @@ The registry snapshot for this run was built with `scripts/build_local_bulk.py`,
 
 Only 7 of these 100 companies list a website in the registry, and two of those pass the identity gate. The other five verified sites were proven by the organisation number or by the legal name plus a registry phone number or address on the site. The starter kit published two websites and no profiles for the same batch.
 
-A 300-company development batch (different seed) gave 32 verified websites (15 registry-listed, 17 discovered), owned profiles for 24 companies and dated activity for 14, with no envelope errors. Each published website and profile in both batches was checked by hand against the page that proves it.
+A 300-company development batch (different seed, run `dev-2026-10-16`) gave 32 verified websites (15 registry-listed, 17 discovered), owned profiles for 23 companies, dated activity for 14, careers pages for 4 and current Nav job ads, verified by employer number, for 2. No envelope had an error. Every published website, profile and job ad in both batches was checked by hand against the page that supports it.

@@ -151,7 +151,7 @@ class NavJobIndex:
         if expires and expires < datetime.now(timezone.utc).date().isoformat():
             return None
         location = (content.get("workLocations") or [{}])[0] or {}
-        title = str(content.get("title") or ad.get("title") or "")[:300]
+        title = re.sub(r"\s+", " ", str(content.get("title") or ad.get("title") or "")).strip()[:300]
         return {
             "title": title,
             "url": AD_PAGE.format(uuid=ad["uuid"]),

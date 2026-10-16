@@ -9,7 +9,7 @@ The agent is built on the Builderr Signalpost starter kit. The starter's registr
 Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-uv sync --frozen
+uv sync --locked
 uv run python scripts/run_competition_batch.py \
   --organisations batch.jsonl \
   --bulk brreg-enheter.csv.gz \
