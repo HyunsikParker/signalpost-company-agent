@@ -280,7 +280,9 @@ class ContractBuilder:
             sentences.append(f"Verified website: {site.get('final_url')}" + (f", linking to {', '.join(sorted({item['platform'] for item in profiles}))} profiles." if profiles else "."))
         jobs = ((self.records.get("jobs") or {}).get("value") or {}).get("postings") or []
         if jobs:
-            sentences.append(f"Hiring: {len(jobs)} open position{'s' if len(jobs) != 1 else ''} on its own careers pages, including “{jobs[0]['title']}”.")
+            from_nav = sum(1 for job in jobs if job.get("method") == "nav_public_job_feed")
+            where = "in Nav's public job database" if from_nav == len(jobs) else "on its own careers pages" if not from_nav else "in Nav's job database and on its own careers pages"
+            sentences.append(f"Hiring: {len(jobs)} current job ad{'s' if len(jobs) != 1 else ''} {where}, including “{jobs[0]['title']}”.")
         activity = ((self.records.get("activity") or {}).get("value") or {}).get("items") or []
         if activity:
             sentences.append(f"Most recent dated activity on its site: “{activity[0]['title']}” ({activity[0]['date']}).")

@@ -146,7 +146,7 @@ def _ascii_tokens(name: str, table: dict[str, str]) -> list[str]:
     return [token for token in re.findall(r"[a-z0-9]+", text) if token not in LEGAL_SUFFIXES]
 
 
-def name_domain_guesses(name: str, limit: int = 7) -> list[str]:
+def name_domain_guesses(name: str, limit: int = 8) -> list[str]:
     """Registered-domain guesses from the legal name, most likely first. Guesses are only candidates."""
     variants = []
     for table in ({"æ": "ae", "ø": "o", "å": "a"}, {"æ": "ae", "ø": "oe", "å": "aa"}):
@@ -163,6 +163,7 @@ def name_domain_guesses(name: str, limit: int = 7) -> list[str]:
         "".join(first) + ".com",
         "".join(variants[0]) + ".no",
         "-".join(variants[0]) + ".no",
+        "".join(first) + "as.no",
     ]
     if len(first) >= 2 and first[-1] in {"holding", "invest", "eiendom", "consulting", "drift", "service", "gruppen", "group"}:
         ordered.append("".join(first[:-1]) + ".no")
