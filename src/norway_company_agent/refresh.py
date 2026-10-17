@@ -20,6 +20,48 @@ TRACKED_FIELDS: dict[str, tuple[str, ...]] = {
 }
 
 
+FIELD_LABELS = {
+    "registry.name": "legal name",
+    "registry.legal_form": "legal form",
+    "registry.employees": "registered employees",
+    "registry.municipality": "municipality",
+    "registry.website": "registered website",
+    "registry.latest_submitted_accounts": "latest submitted accounts",
+    "financials.records": "filed accounts",
+    "financial_history.years": "accounts history",
+    "roles.roles": "registered roles",
+    "locations.locations": "registered workplaces",
+    "website.title": "website title",
+    "website.description": "website description",
+    "website.social_links": "website social links",
+}
+
+
+def change_note(changes: list[dict[str, Any]], compared: bool) -> str:
+    """One summary sentence on refresh: not assessed, no material change, or the changed fields."""
+    if not compared:
+        return "Changes: not assessed, because no earlier run of this agent covers this company."
+    if not changes:
+        return "No material change since the previous run."
+    parts = []
+    for change in changes[:4]:
+        label = FIELD_LABELS.get(change["field"], change["field"])
+        old, new = change.get("old_value"), change.get("new_value")
+        if isinstance(old, (list, dict)) or isinstance(new, (list, dict)):
+            parts.append(f"{label} updated")
+        else:
+            parts.append(f"{label} {_short(old)} → {_short(new)}")
+    more = f", and {len(changes) - 4} more" if len(changes) > 4 else ""
+    return "Changes since the previous run: " + "; ".join(parts) + more + "."
+
+
+def _short(value: Any) -> str:
+    if value in (None, ""):
+        return "not reported"
+    text = " ".join(str(value).split())
+    return text if len(text) <= 40 else text[:39] + "…"
+
+
 def _read(value: Any, path: tuple[str, ...]) -> Any:
     for key in path:
         if not isinstance(value, dict) or key not in value:

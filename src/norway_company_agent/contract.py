@@ -26,9 +26,15 @@ def _fmt_nok(value: Any) -> str | None:
     return f"NOK {amount:.0f}"
 
 
+def _clip(text: str, limit: int) -> str:
+    text = " ".join(str(text).split())
+    return text if len(text) <= limit else text[:limit].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+
+
 class ContractBuilder:
-    def __init__(self, profile: dict[str, Any]) -> None:
+    def __init__(self, profile: dict[str, Any], change_note: str | None = None) -> None:
         self.profile = profile
+        self.change_note = change_note
         self.org = profile["organisation_number"]
         self.records = profile.get("evidence", {})
         self.claims: list[dict[str, Any]] = []
@@ -250,13 +256,25 @@ class ContractBuilder:
         kind = row.get("organisasjonsform.beskrivelse") or row.get("organisasjonsform.kode") or "entity"
         place = row.get("forretningsadresse.poststed") or row.get("forretningsadresse.kommune")
         industry = row.get("naeringskode1.beskrivelse")
-        intro = f"{name} is a Norwegian {kind.lower()}" + (f" in {place.title()}" if place else "") + (f", registered for {industry.lower()}" if industry else "") + "."
+        founded = str(row.get("stiftelsesdato") or "")[:4]
+        intro = (f"{name} is a Norwegian {kind.lower()}" + (f" in {place.title()}" if place else "")
+                 + (f", registered for {industry.lower()}" if industry else "") + (f", founded in {founded}" if founded.isdigit() else "") + ".")
         sentences.append(intro)
+        if row.get("konkurs") == "true":
+            sentences.append("The registry records it as bankrupt.")
+        elif row.get("underAvvikling") == "true":
+            sentences.append("The registry records it as being wound up.")
+        elif row.get("underTvangsavviklingEllerTvangsopplosning") == "true":
+            sentences.append("The registry records forced winding-up or dissolution proceedings.")
+        elif row.get("konkurs") == "false" and row.get("underAvvikling") == "false":
+            sentences.append("The registry records no bankruptcy or winding-up.")
         employees = row.get("antallAnsatte")
         if employees not in (None, ""):
-            sentences.append(f"The registry lists {employees} employees.")
+            sentences.append(f"The registry lists {employees} employee{'' if str(employees) == '1' else 's'}.")
         if site and site.get("description"):
             sentences.append(f"Its website describes the business as: “{site['description'][:220].strip()}”")
+        elif row.get("vedtektsfestetFormaal"):
+            sentences.append(f"Its registered purpose is “{_clip(row['vedtektsfestetFormaal'], 200).rstrip('.')}”.")
         if accounts:
             latest = accounts[0]
             parts = [f"revenue {_fmt_nok(latest['revenue'])}" if _fmt_nok(latest.get("revenue")) else None,
@@ -274,7 +292,8 @@ class ContractBuilder:
         if group and group.get("parent"):
             sentences.append(f"It belongs to the {group.get('group_top')} group; its parent is {group.get('parent')}.")
         elif group and group.get("direct_subsidiaries"):
-            sentences.append(f"It is the parent of {group['direct_subsidiaries']} registered subsidiaries.")
+            count = group["direct_subsidiaries"]
+            sentences.append(f"It is the parent of {count} registered subsidiar{'y' if str(count) == '1' else 'ies'}.")
         profiles = ((self.records.get("company_profiles") or {}).get("value") or {}).get("profiles") or []
         if site:
             sentences.append(f"Verified website: {site.get('final_url')}" + (f", linking to {', '.join(sorted({item['platform'] for item in profiles}))} profiles." if profiles else "."))
@@ -286,19 +305,32 @@ class ContractBuilder:
         activity = ((self.records.get("activity") or {}).get("value") or {}).get("items") or []
         if activity:
             sentences.append(f"Most recent dated activity on its site: “{activity[0]['title']}” ({activity[0]['date']}).")
+        if self.change_note:
+            sentences.append(self.change_note)
+        jobs_value = (self.records.get("jobs") or {}).get("value") or {}
+        nav_status = (jobs_value.get("nav_feed") or {}).get("status")
         unknowns = []
         if not site:
-            unknowns.append("no website could be verified as this exact company")
+            unknowns.append("no website could be verified as this exact company, so no site-based profiles, contacts or posts were collected")
         if not accounts:
             unknowns.append("no filed accounts were available from Regnskapsregisteret")
-        if site and not jobs:
-            unknowns.append("no current job postings were found on its own site")
+        if not roles:
+            unknowns.append("no registered roles were returned by the registry")
+        if not jobs:
+            if nav_status in {"ready", "partial"}:
+                where = "Nav's public job feed" + (" (read in part this run)" if nav_status == "partial" else "")
+                where += " or on its own site" if jobs_value.get("site_checked") else ""
+                unknowns.append(f"no current job ads were found in {where}")
+            elif nav_status:
+                unknowns.append("Nav's public job feed could not be read this run, so current hiring is unknown")
+            elif site:
+                unknowns.append("no current job postings were found on its own site")
         if site and not activity:
             unknowns.append("no dated news or posts were found on its own site")
         if unknowns:
             sentences.append("Unknown: " + "; ".join(unknowns) + ".")
         cited = sorted({evidence_id for claim in self.claims if claim["availability"] == "available" for evidence_id in claim["evidence_ids"]})
-        return {"text": " ".join(sentences), "evidence_ids": cited, "unknowns": unknowns, "method": "deterministic_template_over_published_claims_v1"}
+        return {"text": " ".join(sentences), "evidence_ids": cited, "unknowns": unknowns, "method": "deterministic_template_over_published_claims_v2"}
 
     def build(self) -> dict[str, Any]:
         self.identity()
@@ -312,5 +344,6 @@ class ContractBuilder:
         return {"claims": self.claims, "evidence": list(self.evidence.values()), "summary": summary}
 
 
-def build_contract(profile: dict[str, Any]) -> dict[str, Any]:
-    return ContractBuilder(profile).build()
+def build_contract(profile: dict[str, Any], change_note: str | None = None) -> dict[str, Any]:
+    """`change_note` is the refresh sentence for the summary; the batch runner builds it from `--previous`."""
+    return ContractBuilder(profile, change_note).build()

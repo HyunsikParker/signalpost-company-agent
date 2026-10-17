@@ -22,7 +22,7 @@ uv run python scripts/run_competition_batch.py \
 - `--organisations` accepts JSONL (`{"organisation_number": "…"}` per line), a JSON list, or plain text with one number per line.
 - `--bulk` is the Brønnøysund entity snapshot (`enheter/lastned/csv`). A company missing from the snapshot is read from the live registry instead of stopping the run.
 - `--expected-count` is optional. Every input row gets exactly one envelope; invalid or repeated rows are reported in `report.json`.
-- `--previous out/profiles.jsonl` compares this run with an earlier one and writes typed changes into each envelope.
+- `--previous out/profiles.jsonl` compares this run with an earlier one and writes typed changes into each envelope. Without the flag, a profiles file that an earlier run left at `--profiles-output` is used as the previous run (never with `--resume`); `--previous none` turns the comparison off.
 - `--time-budget-minutes` (default 50, or `SIGNALPOST_TIME_BUDGET_MINUTES`) bounds the whole run. After 70% of it, new companies skip candidate discovery; at the limit, unfinished companies are closed as `budget_exhausted` and the file is still complete.
 - `--workers` (default 16) sets company concurrency; `--registry-workers` (default 8) caps concurrent requests to data.brreg.no.
 
@@ -37,8 +37,8 @@ The envelope keeps the starter's fields (`run_id`, `organisation_number`, `state
 | `run` | run id, start and end time, terminal status |
 | `claims` | `family`, `field`, `value`, `availability`, `confidence`, `evidence_ids`, and `reporting_period` or `effective_at` where one exists |
 | `evidence` | `id`, `source_url`, `source_class`, `retrieved_at`, `content_sha256`, `claim_span` |
-| `summary` | a short description built only from published claims, with the evidence ids it rests on and the unknowns |
-| `changes` | material differences from `--previous`, with old and new evidence hashes |
+| `summary` | a short description built only from published claims: what the company is (form, place, industry, founding year, registry status, registered purpose or the site's own description, accounts, leaders, group), what changed since the previous run, and what could not be found or checked; with the evidence ids it rests on |
+| `changes` | material differences from the previous run, with old and new evidence hashes |
 | `errors` | per-stage failures; a failing source never removes the envelope |
 | `operations` | requests, runtime and third-party cost (always 0) |
 

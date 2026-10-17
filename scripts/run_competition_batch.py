@@ -24,10 +24,10 @@ from norway_company_agent.http import fetch_json  # noqa: E402
 from norway_company_agent.nav_jobs import NavJobIndex, attach_jobs  # noqa: E402
 from norway_company_agent.official import accounting_obligation_assessment, fetch_official_modules  # noqa: E402
 from norway_company_agent.pipeline import EXTERNAL_MODULES, research_company  # noqa: E402
-from norway_company_agent.refresh import diff_profile  # noqa: E402
+from norway_company_agent.refresh import change_note, diff_profile  # noqa: E402
 from norway_company_agent.sampling import iter_bulk  # noqa: E402
 
-AGENT_VERSION = "signalpost-agent-1.0.0"
+AGENT_VERSION = "signalpost-agent-3.0.0"
 DEFAULT_MODULES = "registry,accounting_obligation,registry_live,financials,roles,group,locations,website," + ",".join(EXTERNAL_MODULES)
 BULK_SOURCE = "https://data.brreg.no/enhetsregisteret/api/enheter/lastned/csv"
 LIVE_SOURCE = "https://data.brreg.no/enhetsregisteret/api/enheter/{org}"
@@ -151,6 +151,13 @@ def load_registry(bulk: str, orgs: list[str]) -> tuple[dict[str, dict[str, Any]]
     return found, metadata
 
 
+def previous_profiles_path(previous: str | None, profiles_output: Path, resume: bool) -> Path | None:
+    """The earlier run to compare with: --previous, else a profiles file an earlier run left at --profiles-output."""
+    if previous:
+        return None if previous.casefold() == "none" else Path(previous)
+    return profiles_output if profiles_output.exists() and not resume else None
+
+
 def failed_record(module: str, message: str) -> dict[str, Any]:
     return evidence(module, "source_error", "pipeline", "about:blank", note=message[:300])
 
@@ -168,7 +175,8 @@ def main() -> None:
     parser.add_argument("--registry-workers", type=int, default=8, help="Concurrent requests to data.brreg.no")
     parser.add_argument("--checkpoint-every", type=int, default=25)
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--previous", help="Profiles JSONL from an earlier run; material changes are reported per envelope")
+    parser.add_argument("--previous", help="Profiles JSONL from an earlier run; material changes are reported per envelope. "
+                        "Defaults to an existing --profiles-output left by an earlier run (not with --resume); 'none' turns refresh off")
     parser.add_argument("--time-budget-minutes", type=float, default=float(os.environ.get("SIGNALPOST_TIME_BUDGET_MINUTES", "50")))
     parser.add_argument("--company-budget-seconds", type=float, default=60.0)
     parser.add_argument("--no-discovery", action="store_true", help="Only crawl registry-listed websites")
@@ -243,6 +251,18 @@ def main() -> None:
         state = {item["organisation_number"]: item for item in prior
                  if item.get("organisation_number") in profiles and profile_complete_for_modules(item, requested_modules)}
         resumed = len(state)
+    # Read the earlier run before the first checkpoint overwrites the profiles file it may share.
+    previous_path = previous_profiles_path(args.previous, profiles_output, args.resume)
+    previous: dict[str, dict[str, Any]] = {}
+    if previous_path and previous_path.exists():
+        for line in previous_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if row.get("organisation_number") in profiles:
+                    previous[row["organisation_number"]] = row
     nav_index = NavJobIndex(days=args.nav_days)
     nav_thread = None
     if args.nav_days > 0 and external_requested:
@@ -302,13 +322,6 @@ def main() -> None:
                 if record is not None:
                     record.setdefault("value", {})["nav_feed"] = {"status": nav_index.status if nav_index.ready.is_set() else "not_ready", "errors": nav_index.errors[:3]}
 
-    previous: dict[str, dict[str, Any]] = {}
-    if args.previous and Path(args.previous).exists():
-        for line in Path(args.previous).read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                row = json.loads(line)
-                previous[row.get("organisation_number")] = row
-
     completed_at = utc_now()
     envelopes = []
     def assemble(org: str) -> dict[str, Any]:
@@ -318,17 +331,19 @@ def main() -> None:
             for module, item in envelope["modules"].items():
                 if item["state"] == "source_error" and "budget_exhausted" in str(profile["evidence"].get(module, {}).get("note")):
                     item["state"] = "budget_exhausted"
-        try:
-            contract = build_contract(profile)
-        except Exception as exc:  # a malformed source record must not cost the batch its other envelopes
-            errors[org].append({"stage": "contract", "error": f"{type(exc).__name__}: {str(exc)[:200]}", "trace": traceback.format_exc(limit=3)[-600:]})
-            contract = {"claims": [], "evidence": [], "summary": None}
         changes = []
-        if org in previous:
+        compared = org in previous
+        if compared:
             try:
                 changes = diff_profile(previous[org], profile)
             except Exception as exc:
+                compared = False
                 errors[org].append({"stage": "refresh_diff", "error": f"{type(exc).__name__}: {str(exc)[:200]}"})
+        try:
+            contract = build_contract(profile, change_note=change_note(changes, compared))
+        except Exception as exc:  # a malformed source record must not cost the batch its other envelopes
+            errors[org].append({"stage": "contract", "error": f"{type(exc).__name__}: {str(exc)[:200]}", "trace": traceback.format_exc(limit=3)[-600:]})
+            contract = {"claims": [], "evidence": [], "summary": None}
         metrics = profile.get("run_metrics") or {}
         failed = any(item["state"] in {"source_error", "submission_error", "budget_exhausted"} for item in envelope["modules"].values())
         envelope.update({
@@ -399,6 +414,8 @@ def main() -> None:
         "nav_job_feed": {"status": nav_index.status, "window_days": args.nav_days, "window_start": nav_index.window_start, "pages": nav_index.pages,
                          "ads_indexed": nav_index.items, "feed_requests": nav_index.requests, "verification_requests": nav_requests,
                          "finished_at": nav_index.finished_at, "errors": nav_index.errors[:5]},
+        "refresh": {"previous_profiles": str(previous_path) if previous else None, "companies_compared": len(previous),
+                    "companies_with_changes": sum(1 for envelope in envelopes if envelope.get("changes"))},
         "coverage_by_family": dict(sorted(families.items())),
         "companies_with_errors": sum(1 for org in orgs if errors[org]),
         "validation": validation,

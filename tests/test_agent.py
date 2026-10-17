@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from norway_company_agent.contract import build_contract  # noqa: E402
 from norway_company_agent.identity import assess_owned_profile, assess_site_identity, gate_company_site  # noqa: E402
 from norway_company_agent.nav_jobs import NavJobIndex, name_key  # noqa: E402
+from norway_company_agent.refresh import change_note  # noqa: E402
 from norway_company_agent.site_research import (  # noqa: E402
     candidate_sites,
     corroborations,
@@ -279,6 +280,30 @@ class ContractTest(unittest.TestCase):
         self.assertIn("Daglig leder Kari Nordmann", contract["summary"]["text"])
         self.assertEqual(build_contract(json.loads(json.dumps(record)))["evidence"], contract["evidence"])
 
+    def test_summary_explains_status_purpose_changes_and_unknowns(self):
+        registry = {"field": "registry", "status": "available", "source_url": "https://data.brreg.no/x", "retrieved_at": "2026-10-16T00:00:00Z",
+                    "content_sha256": "c" * 64, "source_class": "official_registry_bulk",
+                    "value": {"navn": "FJORD ELEKTRO AS", "organisasjonsform.beskrivelse": "Aksjeselskap", "stiftelsesdato": "2011-03-04",
+                              "konkurs": "false", "underAvvikling": "false", "forretningsadresse.poststed": "SANDNES",
+                              "vedtektsfestetFormaal": "Elektroinstallasjon,  handel med elektrisk utstyr og det som naturlig hører sammen med dette."}}
+        jobs = {"field": "jobs", "status": "not_found", "source_url": "https://pam-stilling-feed.nav.no/api/v1/feed", "retrieved_at": "2026-10-16T00:00:00Z",
+                "value": {"postings": [], "site_checked": False, "nav_feed": {"status": "ready"}}}
+        record = {"organisation_number": "810034882", "name": "FJORD ELEKTRO AS", "evidence": {"registry": registry, "jobs": jobs}}
+        text = build_contract(record, change_note=change_note([], False))["summary"]["text"]
+        self.assertIn("founded in 2011", text)
+        self.assertIn("The registry records no bankruptcy or winding-up.", text)
+        self.assertIn("Its registered purpose is “Elektroinstallasjon, handel med elektrisk utstyr", text)
+        self.assertIn("no current job ads were found in Nav's public job feed.", text)
+        self.assertIn("dette”.", text)
+        self.assertIn("no registered roles were returned by the registry", text)
+        self.assertLess(text.index("Changes: not assessed"), text.index("Unknown:"))
+
+    def test_change_note_names_changed_fields(self):
+        self.assertEqual(change_note([], True), "No material change since the previous run.")
+        changes = [{"field": "registry.employees", "old_value": 4, "new_value": 6},
+                   {"field": "roles.roles", "old_value": [{"role_code": "DAGL"}], "new_value": []}]
+        self.assertEqual(change_note(changes, True), "Changes since the previous run: registered employees 4 → 6; registered roles updated.")
+
 
 class BatchInputTest(unittest.TestCase):
     def test_invalid_and_duplicate_rows_never_abort(self):
@@ -291,6 +316,19 @@ class BatchInputTest(unittest.TestCase):
             records, warnings = module.read_inputs(str(path))
         self.assertEqual([item["organisation_number"] for item in records], ["810034882", "12345"])
         self.assertEqual(len(warnings), 2)
+
+    def test_earlier_profiles_file_is_the_default_previous_run(self):
+        spec = importlib.util.spec_from_file_location("run_competition_batch", ROOT / "scripts" / "run_competition_batch.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / "profiles.jsonl"
+            self.assertIsNone(module.previous_profiles_path(None, output, resume=False))
+            output.write_text("{}\n", encoding="utf-8")
+            self.assertEqual(module.previous_profiles_path(None, output, resume=False), output)
+            self.assertIsNone(module.previous_profiles_path(None, output, resume=True))
+            self.assertIsNone(module.previous_profiles_path("none", output, resume=False))
+            self.assertEqual(module.previous_profiles_path("old.jsonl", output, resume=False), Path("old.jsonl"))
 
 
 if __name__ == "__main__":
