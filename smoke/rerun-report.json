@@ -1,0 +1,123 @@
+{
+  "run_id": "smoke-2026-10-17-v3-rerun",
+  "agent_version": "signalpost-agent-3.0.0",
+  "started_at": "2026-10-17T08:34:10.716952Z",
+  "completed_at": "2026-10-17T08:38:21.564657Z",
+  "wall_seconds": 250.9,
+  "expected_count": 100,
+  "input_rows": 100,
+  "emitted_envelopes": 100,
+  "input_warnings": [],
+  "resumed_profiles": 0,
+  "profiles_fetched_this_run": 100,
+  "timed_out_companies": [],
+  "modules": [
+    "registry",
+    "accounting_obligation",
+    "registry_live",
+    "financials",
+    "roles",
+    "group",
+    "locations",
+    "website",
+    "website_discovery",
+    "company_profiles",
+    "jobs",
+    "activity",
+    "site_contacts"
+  ],
+  "registry": {
+    "requested": 100,
+    "registry_snapshot_sha256": "462acba902320ff3bdef9f195b8cad8dc40e88d0230d45e5fe30a3b379d99311",
+    "registry_rows_scanned": 100,
+    "selected_from_snapshot": 100,
+    "live_registry_fallback": []
+  },
+  "operations": {
+    "requests": 753,
+    "bytes": 22579924,
+    "p50_ms": 1114,
+    "p95_ms": 2430,
+    "third_party_cost_usd": 0,
+    "company_runtime_p50_ms": 10414,
+    "company_runtime_p95_ms": 35429
+  },
+  "nav_job_feed": {
+    "status": "ready",
+    "window_days": 60,
+    "window_start": "2026-08-18T08:34:11.207081Z",
+    "pages": 125,
+    "ads_indexed": 123058,
+    "feed_requests": 126,
+    "verification_requests": 0,
+    "finished_at": "2026-10-17T08:38:21.525882Z",
+    "errors": []
+  },
+  "refresh": {
+    "previous_profiles": "../data/runs/v12-refresh/profiles.jsonl",
+    "companies_compared": 100,
+    "companies_with_changes": 0
+  },
+  "coverage_by_family": {
+    "annual_accounts": {
+      "companies_available": 100,
+      "claims_available": 276
+    },
+    "company_description": {
+      "companies_available": 5,
+      "claims_available": 5
+    },
+    "company_profiles": {
+      "companies_available": 2,
+      "claims_available": 5
+    },
+    "contact": {
+      "companies_available": 3,
+      "claims_available": 4
+    },
+    "group": {
+      "companies_available": 8,
+      "claims_available": 8
+    },
+    "hiring": {
+      "companies_available": 0,
+      "claims_available": 0
+    },
+    "leadership": {
+      "companies_available": 100,
+      "claims_available": 384
+    },
+    "legal_identity": {
+      "companies_available": 100,
+      "claims_available": 709
+    },
+    "official_website": {
+      "companies_available": 7,
+      "claims_available": 7
+    },
+    "public_activity": {
+      "companies_available": 3,
+      "claims_available": 19
+    },
+    "public_brand": {
+      "companies_available": 4,
+      "claims_available": 5
+    },
+    "workplaces": {
+      "companies_available": 73,
+      "claims_available": 76
+    }
+  },
+  "companies_with_errors": 0,
+  "validation": {
+    "passed": true,
+    "checks": {
+      "exact_expected_count": true,
+      "unique_organisation_numbers": true,
+      "all_entity_states_terminal": true,
+      "all_module_states_terminal": true,
+      "zero_silent_drops": true
+    },
+    "invalid_states": []
+  }
+}
