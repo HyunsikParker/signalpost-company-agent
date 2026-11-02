@@ -30,7 +30,7 @@ Tests: `uv run --with pytest pytest -q`.
 
 ## Browse the output
 
-Add `--viewer-output out/viewer.html` to the batch command, or build a viewer from an existing file:
+The batch command writes `viewer.html` next to the envelopes file (`--viewer-output` chooses another path, `--viewer-output none` turns it off). To build a viewer from an existing file:
 
 ```bash
 uv run python scripts/build_viewer.py --input out/envelopes.jsonl --output out/viewer.html

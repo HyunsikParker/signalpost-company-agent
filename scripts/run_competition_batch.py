@@ -169,7 +169,7 @@ def main() -> None:
     parser.add_argument("--output", required=True, help="Terminal envelope JSONL")
     parser.add_argument("--profiles-output", required=True)
     parser.add_argument("--report", required=True)
-    parser.add_argument("--viewer-output", help="Optional self-contained HTML company viewer")
+    parser.add_argument("--viewer-output", help="Self-contained HTML company viewer; defaults to viewer.html next to --output, 'none' turns it off")
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--expected-count", type=int, default=None, help="Defaults to the number of input rows")
     parser.add_argument("--workers", type=int, default=16)
@@ -379,9 +379,15 @@ def main() -> None:
     validation = validate_envelopes(envelopes, len(orgs))
     write_jsonl(profiles_output, [state[org] for org in orgs])
     write_jsonl(Path(args.output), envelopes)
-    if args.viewer_output:
-        from norway_company_agent.viewer import write_viewer
-        write_viewer(envelopes, Path(args.viewer_output), label=f"Run {args.run_id}")
+    viewer_status = None
+    if str(args.viewer_output or "").casefold() != "none":
+        viewer_path = Path(args.viewer_output) if args.viewer_output else Path(args.output).with_name("viewer.html")
+        try:
+            from norway_company_agent.viewer import write_viewer
+            write_viewer(envelopes, viewer_path, label=f"Run {args.run_id}")
+            viewer_status = {"path": str(viewer_path), "written": True}
+        except Exception as exc:  # the viewer is a convenience; it never fails the run
+            viewer_status = {"path": str(viewer_path), "written": False, "error": f"{type(exc).__name__}: {str(exc)[:200]}"}
 
     latencies = sorted(totals.pop("latencies_ms"))
     totals["p50_ms"] = latencies[len(latencies) // 2] if latencies else None
@@ -423,6 +429,7 @@ def main() -> None:
         "coverage_by_family": dict(sorted(families.items())),
         "companies_with_errors": sum(1 for org in orgs if errors[org]),
         "validation": validation,
+        "viewer": viewer_status,
     }
     Path(args.report).parent.mkdir(parents=True, exist_ok=True)
     Path(args.report).write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

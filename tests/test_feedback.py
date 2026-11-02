@@ -116,6 +116,29 @@ class FeedbackTest(unittest.TestCase):
             self.assertTrue(json.loads((p / "report.json").read_text())["validation"]["passed"])
             self.assertTrue((p / "viewer.html").exists())
 
+    def test_viewer_is_written_by_default_and_can_be_turned_off(self):
+        spec = importlib.util.spec_from_file_location("feedback_batch_viewer", ROOT / "scripts/run_competition_batch.py")
+        batch = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(batch)
+        orgs = [str(820000000 + n) for n in range(5)]
+        for flag, expected in ((None, True), ("none", False)):
+            with tempfile.TemporaryDirectory() as folder:
+                p = Path(folder)
+                (p / "input.txt").write_text("\n".join(orgs))
+                argv = ["batch", "--organisations", str(p / "input.txt"), "--bulk", str(p / "unused.gz"), "--output", str(p / "envelopes.jsonl"),
+                        "--profiles-output", str(p / "profiles.jsonl"), "--report", str(p / "report.json"), "--run-id", "viewer-default",
+                        "--nav-days", "0", "--modules", "registry,roles,website"] + (["--viewer-output", flag] if flag else [])
+                with patch.object(sys, "argv", argv), \
+                        patch.object(batch, "load_registry", lambda *a: ({org: fixture_profile(org) for org in orgs}, {"fixture": True})), \
+                        patch.object(batch, "fetch_official_modules", side_effect=RuntimeError("offline fixture")), \
+                        patch.object(batch, "research_company", lambda profile, **kw: {"requests": 0, "bytes": 0, "latencies_ms": []}), \
+                        patch.object(batch.os, "_exit", side_effect=SystemExit), \
+                        patch.object(batch, "fetch_json", side_effect=AssertionError("network prohibited")):
+                    with self.assertRaises(SystemExit):
+                        batch.main()
+                self.assertEqual((p / "viewer.html").exists(), expected)
+                self.assertEqual(bool((json.loads((p / "report.json").read_text()).get("viewer") or {}).get("written")), expected)
+
 
 if __name__ == "__main__":
     unittest.main()
