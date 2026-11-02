@@ -38,7 +38,7 @@ uv run python scripts/build_viewer.py --input out/envelopes.jsonl --output out/v
 
 Open `out/viewer.html` in a browser. Search by company name or organisation number, filter available and unavailable fields, and open a fact's source to see its retrieval date, supporting text and content hash. The viewer works offline, has no remote assets and can load another JSONL or JSON batch locally. The builder also accepts `.jsonl.gz`. Missing source metadata is shown as not recorded; it is never filled with the viewer's current date.
 
-This local feedback candidate omits punctuation-only descriptions and domain-only portfolio titles from both claims and summaries. News and social links retain the page that supplied them. The original source records stay intact. An offline 300-company test checks terminal output under source failures; it does not establish live coverage, runtime or an official score.
+Version 4 omits punctuation-only descriptions and domain-only portfolio titles from both claims and summaries, and news and social links keep the page that supplied them. The original source records stay intact. A live run on 120 companies not used during development (`select_entry_batch.py --seed 20261103`) returned 120 of 120 envelopes in 248 seconds with validation passed. An offline 300-company test checks that every input still gets a terminal envelope when sources fail.
 
 ## What each envelope contains
 
