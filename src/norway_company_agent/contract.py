@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
+from .site_research import credible_activity, meaningful_description
+
 AVAILABILITY = {
     "available": "available",
     "not_found": "not_available",
@@ -191,10 +193,14 @@ class ContractBuilder:
         assessment = value.get("identity_assessment") or {}
         if record.get("status") != "available":
             self.absent("official_website", "official_website", record or None)
+            self.absent("company_description", "company_description", record or None,
+                        note="No verified company site was available for a description")
             return None
         if not assessment.get("publishable"):
             self.absent("official_website", "official_website", record, availability="ambiguous",
                         note="A candidate site was reached but did not prove the exact legal entity: " + "; ".join(assessment.get("reasons") or [])[:300])
+            self.absent("company_description", "company_description", record, availability="ambiguous",
+                        note="The candidate website did not pass the exact-entity identity gate")
             return None
         proof = value.get("identity_proof") or {}
         span = proof.get("claim_span") or value.get("legal_name_span") or value.get("title") or value.get("final_url")
@@ -205,17 +211,22 @@ class ContractBuilder:
                    extra={"identity_method": assessment.get("method"), "identity_reasons": assessment.get("reasons"), "discovery_origin": value.get("discovery_origin")})
         for brand in value.get("brand_names") or []:
             self.claim("public_brand", "public_brand", brand, record, f"site declares the name '{brand}'")
-        if value.get("description"):
-            self.claim("company_description", "company_description", value["description"][:600], record, value["description"][:300])
-        return value
+        description = meaningful_description(value.get("description"))
+        if description:
+            self.claim("company_description", "company_description", description[:600], record, description[:300])
+        else:
+            self.absent("company_description", "company_description", record, availability="not_available",
+                        note="The verified site has no descriptive text; blank, punctuation-only and template placeholders are omitted")
+        return {**value, "description": description}
 
     def owned(self, site: dict[str, Any] | None) -> None:
         profiles = self.records.get("company_profiles") or {}
         items = (profiles.get("value") or {}).get("profiles") or []
         if items:
             for item in items:
-                self.claim("company_profiles", "social_profile", {"platform": item["platform"], "url": item["url"]}, profiles,
-                           f"verified company site links to {item['url']}", url=(site or {}).get("final_url"))
+                source = {**profiles, **{key: item[key] for key in ("content_sha256", "retrieved_at") if item.get(key)}}
+                self.claim("company_profiles", "social_profile", {"platform": item["platform"], "url": item["url"]}, source,
+                           f"verified company site links to {item['url']}", url=item.get("source_url") or (site or {}).get("final_url"))
         else:
             self.absent("company_profiles", "social_profile", profiles or None)
         contacts = self.records.get("site_contacts") or {}
@@ -241,13 +252,17 @@ class ContractBuilder:
         if not postings:
             self.absent("hiring", "job_posting", jobs or None)
         activity = self.records.get("activity") or {}
-        items = (activity.get("value") or {}).get("items") or []
+        row = (self.records.get("registry") or {}).get("value") or {}
+        items, dropped = credible_activity((activity.get("value") or {}).get("items") or [], row.get("stiftelsesdato"))
         for item in items:
-            self.claim("public_activity", "dated_activity", {key: item.get(key) for key in ("title", "url", "date", "date_type", "kind")}, activity,
+            source = {**activity, **{key: item[key] for key in ("content_sha256", "retrieved_at") if item.get(key)}}
+            self.claim("public_activity", "dated_activity", {key: item.get(key) for key in ("title", "url", "date", "date_type", "kind")}, source,
                        f"{item['date']} {item['title']}", url=item.get("source_url"),
                        extra={"effective_at": item.get("date"), "extraction_method": item.get("method")})
         if not items:
-            self.absent("public_activity", "dated_activity", activity or None)
+            self.absent("public_activity", "dated_activity", activity or None,
+                        availability="not_available" if dropped or activity.get("status") == "available" else None,
+                        note="Only placeholder, domain-only portfolio or pre-founding items were found; none is published as dated activity" if dropped else None)
 
     def summary(self, accounts: list[dict[str, Any]], roles: list[dict[str, Any]], site: dict[str, Any] | None, group: dict[str, Any] | None) -> dict[str, Any]:
         row = (self.records.get("registry") or {}).get("value") or {}
@@ -302,7 +317,7 @@ class ContractBuilder:
             from_nav = sum(1 for job in jobs if job.get("method") == "nav_public_job_feed")
             where = "in Nav's public job database" if from_nav == len(jobs) else "on its own careers pages" if not from_nav else "in Nav's job database and on its own careers pages"
             sentences.append(f"Hiring: {len(jobs)} current job ad{'s' if len(jobs) != 1 else ''} {where}, including “{jobs[0]['title']}”.")
-        activity = ((self.records.get("activity") or {}).get("value") or {}).get("items") or []
+        activity, _ = credible_activity(((self.records.get("activity") or {}).get("value") or {}).get("items") or [], row.get("stiftelsesdato"))
         if activity:
             sentences.append(f"Most recent dated activity on its site: “{activity[0]['title']}” ({activity[0]['date']}).")
         if self.change_note:
@@ -323,10 +338,15 @@ class ContractBuilder:
                 unknowns.append(f"no current job ads were found in {where}")
             elif nav_status:
                 unknowns.append("Nav's public job feed could not be read this run, so current hiring is unknown")
+            elif site and (self.records.get("jobs") or {}).get("status") in {"source_error", "not_fetched"}:
+                unknowns.append("current hiring could not be assessed this run")
             elif site:
                 unknowns.append("no current job postings were found on its own site")
         if site and not activity:
-            unknowns.append("no dated news or posts were found on its own site")
+            if (self.records.get("activity") or {}).get("status") in {"source_error", "not_fetched"}:
+                unknowns.append("dated activity could not be assessed this run")
+            else:
+                unknowns.append("no dated news or posts were found on its own site")
         if unknowns:
             sentences.append("Unknown: " + "; ".join(unknowns) + ".")
         cited = sorted({evidence_id for claim in self.claims if claim["availability"] == "available" for evidence_id in claim["evidence_ids"]})

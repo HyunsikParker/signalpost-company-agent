@@ -86,6 +86,7 @@ def _page(url: str, raw: bytes, *, org: str, name_pattern: Any = None) -> dict[s
         "text": text,
         "title": soup.title.get_text(" ", strip=True)[:500] if soup.title else "",
         "content_sha256": content_hash(raw),
+        "retrieved_at": utc_now().isoformat().replace("+00:00", "Z"),
         "org_numbers": numbers,
         "org_span": org_number_span(text, org) if org in numbers else None,
         "name_span": name_span(text, name_pattern),
@@ -215,12 +216,11 @@ def crawl_site(
                 places.append(place)
         full_span = full_span or name_span(page["text"], full_pattern)
 
-    social = list(_social_links(final_url, soup))
-    for page in pages[1:]:
-        social.extend(_social_links(page["url"], page["soup"]))
-    social.extend(structured_social_links(structured.get("json-ld", [])))
+    social = []
     for page in pages:
-        social.extend(structured_social_links(page["jsonld"]))
+        links = _social_links(page["url"], page["soup"]) + structured_social_links(page["jsonld"])
+        for link in links:
+            social.append({**link, **{key: page[key] for key in ("content_sha256", "retrieved_at")}, "source_url": page["url"]})
 
     value = {
         "requested_url": normalized,
@@ -279,13 +279,16 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
     careers_checked: list[str] = []
     found_contacts: dict[str, list[str]] = {"emails": [], "phones": []}
 
+    def stamped(items: list[dict[str, Any]], digest: str, fetched_at: str | None = None) -> list[dict[str, Any]]:
+        return [{**item, "content_sha256": digest, "retrieved_at": fetched_at or utc_now().isoformat().replace("+00:00", "Z")} for item in items]
+
     def add_activity(items: list[dict[str, Any]]) -> None:
         for item in items:
             activity.setdefault(item["url"], item)
 
     for page in pages:
-        add_activity(structured_activity(page["url"], page["jsonld"], domain, now))
-        for job in structured_jobs(page["url"], page["jsonld"], now):
+        add_activity(stamped(structured_activity(page["url"], page["jsonld"], domain, now), page["content_sha256"], page.get("retrieved_at")))
+        for job in stamped(structured_jobs(page["url"], page["jsonld"], now), page["content_sha256"], page.get("retrieved_at")):
             jobs.setdefault(job["url"] + "#" + job["title"], job)
         page_contacts = contacts(page["url"], page["soup"], domain)
         for key in found_contacts:
@@ -310,7 +313,7 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
         if raw is None:
             errors.append({"url": feed_url, "error": error})
             continue
-        add_activity(parse_feed(raw, final or feed_url, domain, now))
+        add_activity(stamped(parse_feed(raw, final or feed_url, domain, now), content_hash(raw)))
         if activity:
             break
 
@@ -324,11 +327,11 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
                 raw, final, kind, error = fetch_text(listing_url, SAFE_OPENER, timeout=min(timeout, max(2.0, deadline.left())), max_bytes=PAGE_LIMIT, log=log)
                 if raw is not None and "html" in kind.casefold():
                     soup = BeautifulSoup(raw.decode("utf-8", errors="replace"), "lxml")
-                    listings = [{"url": final or listing_url, "soup": soup}]
+                    listings = [{"url": final or listing_url, "soup": soup, "content_sha256": content_hash(raw)}]
                 elif error:
                     errors.append({"url": listing_url, "error": error})
         for page in listings[:2]:
-            add_activity(listing_items(page["url"], page["soup"], domain, now))
+            add_activity(stamped(listing_items(page["url"], page["soup"], domain, now), page["content_sha256"], page.get("retrieved_at")))
         if not activity and listings:
             for article_url in listing_links(listings[0]["url"], listings[0]["soup"], domain):
                 if deadline.expired():
@@ -339,12 +342,12 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
                     continue
                 entry = article_entry(final or article_url, BeautifulSoup(raw.decode("utf-8", errors="replace"), "lxml"), now)
                 if entry and same_site(entry["url"], domain):
-                    add_activity([entry])
+                    add_activity(stamped([entry], content_hash(raw)))
 
     if not activity and home and not deadline.expired():
         origin = "{0.scheme}://{0.netloc}".format(urllib.parse.urlparse(home["url"]))
         sitemap_urls = list(ROBOTS.sitemaps.get(origin, [])) or [origin + "/sitemap.xml"]
-        candidates: list[tuple[str, str | None]] = []
+        candidates: list[tuple[str, str | None, str, str, str]] = []
         queue = sitemap_urls[:2]
         while queue and len(sitemaps_checked) < 3 and not deadline.expired():
             sitemap_url = queue.pop(0)
@@ -356,16 +359,16 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
                 errors.append({"url": sitemap_url, "error": error})
                 continue
             urls, children = parse_sitemap(raw)
-            candidates.extend(urls)
+            candidates.extend((loc, lastmod, sitemap_url, content_hash(raw), utc_now().isoformat().replace("+00:00", "Z")) for loc, lastmod in urls)
             newsy = [child for child in children if any(term in child.casefold() for term in ("post", "news", "nyhet", "artikl", "blog", "aktuelt"))]
             queue.extend(newsy[:1])
         dated = []
-        for loc, lastmod in candidates:
+        for loc, lastmod, sitemap_url, digest, fetched_at in candidates:
             day = _iso(lastmod)
             title = slug_title(loc)
             if NEWS_PATH.search(urllib.parse.urlparse(loc).path + "/") and title and _plausible_date(day, now) and same_site(loc, domain):
                 dated.append({"title": title[:300], "url": loc, "date": day, "date_type": "last_modified", "kind": "page",
-                              "method": "sitemap_lastmod", "source_url": sitemaps_checked[-1] if sitemaps_checked else loc})
+                              "method": "sitemap_lastmod", "source_url": sitemap_url, "content_sha256": digest, "retrieved_at": fetched_at})
         dated.sort(key=lambda item: item["date"], reverse=True)
         add_activity(dated[:5])
 
@@ -394,7 +397,7 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
             continue
         soup = BeautifulSoup(raw.decode("utf-8", errors="replace"), "lxml")
         page_url = final or link["url"]
-        for job in structured_jobs(page_url, jsonld_blocks(soup), now):
+        for job in stamped(structured_jobs(page_url, jsonld_blocks(soup), now), content_hash(raw)):
             jobs.setdefault(job["url"] + "#" + job["title"], job)
         ats = link["ats"]
         if not ats:
@@ -407,7 +410,7 @@ def collect_signals(record: dict[str, Any], pages: list[dict[str, Any]], *, dead
                     page_url = final or page_url
                     break
         if ats and soup is not None:
-            for job in ats_jobs(page_url, soup, ats):
+            for job in stamped(ats_jobs(page_url, soup, ats), content_hash(raw)):
                 jobs.setdefault(job["url"] + "#" + job["title"], job)
 
     ordered_activity = sorted(activity.values(), key=lambda item: item["date"], reverse=True)[:MAX_FEED_ITEMS]

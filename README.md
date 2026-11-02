@@ -28,6 +28,18 @@ uv run python scripts/run_competition_batch.py \
 
 Tests: `uv run --with pytest pytest -q`.
 
+## Browse the output
+
+Add `--viewer-output out/viewer.html` to the batch command, or build a viewer from an existing file:
+
+```bash
+uv run python scripts/build_viewer.py --input out/envelopes.jsonl --output out/viewer.html
+```
+
+Open `out/viewer.html` in a browser. Search by company name or organisation number, filter available and unavailable fields, and open a fact's source to see its retrieval date, supporting text and content hash. The viewer works offline, has no remote assets and can load another JSONL or JSON batch locally. The builder also accepts `.jsonl.gz`. Missing source metadata is shown as not recorded; it is never filled with the viewer's current date.
+
+This local feedback candidate omits punctuation-only descriptions and domain-only portfolio titles from both claims and summaries. News and social links retain the page that supplied them. The original source records stay intact. An offline 300-company test checks terminal output under source failures; it does not establish live coverage, runtime or an official score.
+
 ## What each envelope contains
 
 The envelope keeps the starter's fields (`run_id`, `organisation_number`, `state`, `modules`, `profile`) and adds the claim contract:

@@ -123,7 +123,8 @@ def research_company(
     )
 
     found: dict[str, Any] = {}
-    if published is not None and signals and deadline.left() > 3:
+    signals_checked = published is not None and signals and deadline.left() > 3
+    if signals_checked:
         found = collect_signals(published, published_pages, deadline=deadline, log=log)
     elif published is not None:
         found = {"activity": [], "jobs": [], "careers_page": None, "contacts": {"emails": [], "phones": []}, "errors": [{"url": site_url, "error": "company time budget exhausted before signal collection"}]}
@@ -143,22 +144,25 @@ def research_company(
     jobs = list(found.get("jobs") or [])
     records["jobs"] = evidence(
         "jobs",
-        "available" if jobs else "not_found",
+        "available" if jobs else "source_error" if published and not signals_checked else "not_found",
         "public_job_database_and_company_careers_pages",
         found.get("careers_page") or site_url,
         value={"postings": jobs, "careers_page": found.get("careers_page"), "pages_checked": found.get("careers_checked", []),
-               "site_checked": published is not None},
-        note=None if jobs else ("No current job posting on the verified site or the careers page it links" if published else site_note),
+               "site_checked": signals_checked},
+        note=None if jobs else ("Signal collection was skipped or its time budget ended; current hiring was not assessed" if published and not signals_checked
+                               else "No current job posting on the verified site or the careers page it links" if published else site_note),
     )
     activity, dropped = credible_activity(found.get("activity") or [], row.get("stiftelsesdato") or row.get("registreringsdatoEnhetsregisteret") or row.get("registreringsdatoenhetsregisteret"))
     records["activity"] = evidence(
         "activity",
-        "available" if activity else "not_found",
+        "available" if activity else "source_error" if published and not signals_checked else "not_found",
         "company_owned_news_and_feeds",
         site_url,
         value={"items": activity, "feeds_checked": found.get("feeds_checked", []), "sitemaps_checked": found.get("sitemaps_checked", []),
                "dropped_placeholder_or_pre_founding": dropped},
-        note=None if activity else ("No dated item found in the verified site's pages, feeds or sitemap" if published else site_note),
+        note=None if activity else ("Signal collection was skipped or its time budget ended; dated activity was not assessed" if published and not signals_checked
+                                   else "Only placeholder, domain-only portfolio or pre-founding items were found" if dropped
+                                   else "No dated item found in the verified site's pages, feeds or sitemap" if published else site_note),
     )
     site_contacts = found.get("contacts") or {"emails": [], "phones": []}
     has_contacts = bool(site_contacts.get("emails") or site_contacts.get("phones"))

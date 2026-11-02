@@ -714,6 +714,16 @@ def article_entry(page_url: str, soup: BeautifulSoup, now: datetime) -> dict[str
     return {"title": title, "url": page_url, "date": day, "date_type": date_type, "kind": "news", "method": "company_article_page", "source_url": page_url}
 
 
+def meaningful_description(value: Any) -> str | None:
+    """Keep source text, but never publish punctuation or site-builder placeholders."""
+    text = " ".join(str(value or "").split())
+    if not any(character.isalnum() for character in text):
+        return None
+    if text.casefold().strip(". ") in {"n/a", "na", "none", "null", "undefined", "coming soon", "under construction"}:
+        return None
+    return None if PLACEHOLDER_TEXT.search(text) else text
+
+
 def credible_activity(items: list[dict[str, Any]], founded: str | None, margin_days: int = 730) -> tuple[list[dict[str, Any]], int]:
     """Drop placeholder posts and items dated more than two years before the company was founded.
 
@@ -723,6 +733,11 @@ def credible_activity(items: list[dict[str, Any]], founded: str | None, margin_d
         cutoff = (datetime.fromisoformat(founded[:10]) - timedelta(days=margin_days)).date().isoformat()
     kept = []
     for item in items:
+        raw_title = str(item.get("title") or "").strip()
+        # A portfolio card labelled only with a customer's domain is not company news.
+        domain_label = re.fullmatch(r"(?:https?://)?(?:www\.)?[\w-]+(?:\.[\w-]+)*\.[a-zA-Z]{2,24}/?", raw_title)
+        if not meaningful_description(raw_title) or domain_label:
+            continue
         title = re.sub(r"[^\w ]+", "", str(item.get("title") or "").casefold()).strip()
         if title in PLACEHOLDER_TITLES or PLACEHOLDER_TEXT.search(str(item.get("title") or "")):
             continue

@@ -169,6 +169,7 @@ def main() -> None:
     parser.add_argument("--output", required=True, help="Terminal envelope JSONL")
     parser.add_argument("--profiles-output", required=True)
     parser.add_argument("--report", required=True)
+    parser.add_argument("--viewer-output", help="Optional self-contained HTML company viewer")
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--expected-count", type=int, default=None, help="Defaults to the number of input rows")
     parser.add_argument("--workers", type=int, default=16)
@@ -378,6 +379,9 @@ def main() -> None:
     validation = validate_envelopes(envelopes, len(orgs))
     write_jsonl(profiles_output, [state[org] for org in orgs])
     write_jsonl(Path(args.output), envelopes)
+    if args.viewer_output:
+        from norway_company_agent.viewer import write_viewer
+        write_viewer(envelopes, Path(args.viewer_output), label=f"Run {args.run_id}")
 
     latencies = sorted(totals.pop("latencies_ms"))
     totals["p50_ms"] = latencies[len(latencies) // 2] if latencies else None

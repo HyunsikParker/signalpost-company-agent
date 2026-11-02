@@ -265,6 +265,9 @@ def gate_company_site(profile: dict[str, Any], website: dict[str, Any]) -> dict[
     value["discovered_social_links"] = original
     assessments = [assess_owned_profile(profile, link, value, assessment["publishable"]) for link in original]
     value["social_link_assessments"] = assessments
-    value["social_links"] = [{"platform": item["platform"], "url": item["url"]} for item in assessments if item["publishable"]]
+    value["social_links"] = [
+        {key: source[key] for key in ("platform", "url", "source_url", "content_sha256", "retrieved_at") if key in source}
+        for source, item in zip(original, assessments) if item["publishable"]
+    ]
     website["value"] = value
     return website
