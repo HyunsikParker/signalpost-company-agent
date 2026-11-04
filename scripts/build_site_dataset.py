@@ -52,7 +52,10 @@ def fact_text(field, ev, company):
         a = company.get("accounts")
         return f"{a['year']}: revenue {a['revenue']:,.0f} {a['currency']}" if a and a.get("revenue") is not None else "filed"
     if field == "website":
-        return v.get("final_url") if isinstance(v, dict) else None
+        url = v.get("final_url") if isinstance(v, dict) else None
+        if url and company.get("website_unconfirmed"):
+            return f"{url} (listed in the business register; not confirmed as the company's own site)"
+        return url
     if field == "group" and isinstance(v, dict):
         n = len(v.get("children") or [])
         return f"{n} subsidiar{'y' if n == 1 else 'ies'}" + (", has a parent company" if v.get("parent") else "")
@@ -85,6 +88,8 @@ def company(row):
     if ev.get("financials", {}).get("status") == "available":
         c["accounts"] = accounts(ev["financials"])
     w = ev.get("website") or {}
+    # a website the register lists but the identity check did not confirm; the site says so instead of implying it
+    c["website_unconfirmed"] = w.get("status") == "available" and (ev.get("website_discovery") or {}).get("status") != "available"
     if w.get("status") == "available" and isinstance(w.get("value"), dict):
         c["website"] = {"url": w["value"].get("final_url"), "title": w["value"].get("title"),
                         "description": (w["value"].get("description") or "")[:240] or None}
@@ -101,8 +106,11 @@ def company(row):
         e = ev.get(field)
         if not e:
             continue
+        note = (e.get("note") or None) if e.get("status") != "available" else None
+        if field == "group" and note == "HTTP 404":
+            note = "The register has no group structure for this company"
         c["facts"].append({"field": field, "label": label, "status": e.get("status"), "value": fact_text(field, e, c),
-                           "note": (e.get("note") or None) if e.get("status") != "available" else None,
+                           "note": note,
                            "source": source(e)})
     return c
 

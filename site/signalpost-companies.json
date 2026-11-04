@@ -43,6 +43,7 @@
     "revenue_change_pct": 64.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -97,7 +98,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/912823970",
       "type": "official_group_structure",
@@ -231,6 +232,7 @@
     "revenue_change_pct": 0.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -285,7 +287,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/916729774",
       "type": "official_group_structure",
@@ -417,6 +419,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -471,7 +474,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/917998787",
       "type": "official_group_structure",
@@ -605,6 +608,7 @@
     "revenue_change_pct": 2.5,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -659,7 +663,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/918049215",
       "type": "official_group_structure",
@@ -793,6 +797,7 @@
     "revenue_change_pct": 106.5,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -847,7 +852,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/919948493",
       "type": "official_group_structure",
@@ -981,6 +986,7 @@
     "revenue_change_pct": -18.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -1035,7 +1041,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/982410851",
       "type": "official_group_structure",
@@ -1167,6 +1173,7 @@
      }
     ]
    },
+   "website_unconfirmed": true,
    "website": {
     "url": "https://www.myklebustverft.no/",
     "title": "MYKLEBUST",
@@ -1249,7 +1256,7 @@
      "field": "website",
      "label": "Company website",
      "status": "available",
-     "value": "https://www.myklebustverft.no/",
+     "value": "https://www.myklebustverft.no/ (listed in the business register; not confirmed as the company's own site)",
      "note": null,
      "source": {
       "url": "https://www.myklebustverft.no/",
@@ -1358,6 +1365,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -1412,7 +1420,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/916049153",
       "type": "official_group_structure",
@@ -1546,6 +1554,7 @@
     "revenue_change_pct": 48.5,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -1722,6 +1731,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -1776,7 +1786,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/936276075",
       "type": "official_group_structure",
@@ -1910,6 +1920,7 @@
     "revenue_change_pct": -64.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -1964,7 +1975,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/923472134",
       "type": "official_group_structure",
@@ -2086,6 +2097,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -2140,7 +2152,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/936312055",
       "type": "official_group_structure",
@@ -2274,6 +2286,7 @@
     "revenue_change_pct": -6.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": true,
    "website": {
     "url": "https://www.wacker.com/cms/en-kr/home/home.html",
     "title": "Home - Wacker Chemie AG",
@@ -2333,7 +2346,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/995541432",
       "type": "official_group_structure",
@@ -2356,7 +2369,7 @@
      "field": "website",
      "label": "Company website",
      "status": "available",
-     "value": "https://www.wacker.com/cms/en-kr/home/home.html",
+     "value": "https://www.wacker.com/cms/en-kr/home/home.html (listed in the business register; not confirmed as the company's own site)",
      "note": null,
      "source": {
       "url": "https://www.wacker.com/cms/en-kr/home/home.html",
@@ -2465,6 +2478,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -2519,7 +2533,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/989252968",
       "type": "official_group_structure",
@@ -2653,6 +2667,7 @@
     "revenue_change_pct": 4.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -2829,6 +2844,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -2883,7 +2899,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/935450233",
       "type": "official_group_structure",
@@ -3017,6 +3033,7 @@
     "revenue_change_pct": -3.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -3071,7 +3088,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/914723612",
       "type": "official_group_structure",
@@ -3205,6 +3222,7 @@
     "revenue_change_pct": 61.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -3259,7 +3277,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/918975934",
       "type": "official_group_structure",
@@ -3388,6 +3406,7 @@
     "revenue_change_pct": -1.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -3442,7 +3461,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/933170705",
       "type": "official_group_structure",
@@ -3576,6 +3595,7 @@
     "revenue_change_pct": -1.5,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -3630,7 +3650,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/997768728",
       "type": "official_group_structure",
@@ -3764,6 +3784,7 @@
     "revenue_change_pct": 2.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://vokser.no/",
     "title": "Digitale løsninger som gir resultater | Vokser",
@@ -3835,7 +3856,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/919653477",
       "type": "official_group_structure",
@@ -3969,6 +3990,7 @@
     "revenue_change_pct": -22.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -4023,7 +4045,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/927239620",
       "type": "official_group_structure",
@@ -4157,6 +4179,7 @@
     "revenue_change_pct": -7.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.aasbetong.no/",
     "title": "Et utemiljø å være stolt av",
@@ -4239,7 +4262,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/986739874",
       "type": "official_group_structure",
@@ -4361,6 +4384,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -4415,7 +4439,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/935180759",
       "type": "official_group_structure",
@@ -4549,6 +4573,7 @@
     "revenue_change_pct": 12.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -4603,7 +4628,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/919038438",
       "type": "official_group_structure",
@@ -4737,6 +4762,7 @@
     "revenue_change_pct": -24.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -4791,7 +4817,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/926698435",
       "type": "official_group_structure",
@@ -4923,6 +4949,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -4977,7 +5004,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/927092026",
       "type": "official_group_structure",
@@ -5106,6 +5133,7 @@
     "revenue_change_pct": 108.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -5160,7 +5188,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/933241866",
       "type": "official_group_structure",
@@ -5294,6 +5322,7 @@
     "revenue_change_pct": 9.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://maaemo.no/",
     "title": "Maaemo Restaurant",
@@ -5353,7 +5382,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/995748983",
       "type": "official_group_structure",
@@ -5485,6 +5514,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -5539,7 +5569,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/927949954",
       "type": "official_group_structure",
@@ -5666,6 +5696,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -5720,7 +5751,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/933195988",
       "type": "official_group_structure",
@@ -5854,6 +5885,7 @@
     "revenue_change_pct": 15.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -5908,7 +5940,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/920597122",
       "type": "official_group_structure",
@@ -6042,6 +6074,7 @@
     "revenue_change_pct": 10.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://skoglundmaskin.no/",
     "title": "Skoglund Maskin AS – Graving, Drenering, Transport, Entreprenør og Støttemur",
@@ -6101,7 +6134,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/922767459",
       "type": "official_group_structure",
@@ -6223,6 +6256,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -6277,7 +6311,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/936256295",
       "type": "official_group_structure",
@@ -6411,6 +6445,7 @@
     "revenue_change_pct": 74.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -6465,7 +6500,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/914896738",
       "type": "official_group_structure",
@@ -6599,6 +6634,7 @@
     "revenue_change_pct": -30.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -6653,7 +6689,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/829363712",
       "type": "official_group_structure",
@@ -6787,6 +6823,7 @@
     "revenue_change_pct": -35.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -6841,7 +6878,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/911683237",
       "type": "official_group_structure",
@@ -6975,6 +7012,7 @@
     "revenue_change_pct": 7.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -7029,7 +7067,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/926648306",
       "type": "official_group_structure",
@@ -7163,6 +7201,7 @@
     "revenue_change_pct": -5.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -7217,7 +7256,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/921338732",
       "type": "official_group_structure",
@@ -7339,6 +7378,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -7393,7 +7433,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/936008593",
       "type": "official_group_structure",
@@ -7522,6 +7562,7 @@
     "revenue_change_pct": 872.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -7576,7 +7617,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/934404688",
       "type": "official_group_structure",
@@ -7710,6 +7751,7 @@
     "revenue_change_pct": 112.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -7764,7 +7806,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/921810229",
       "type": "official_group_structure",
@@ -7898,6 +7940,7 @@
     "revenue_change_pct": -54.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -7952,7 +7995,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/914582660",
       "type": "official_group_structure",
@@ -8084,6 +8127,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -8138,7 +8182,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/930681628",
       "type": "official_group_structure",
@@ -8272,6 +8316,7 @@
     "revenue_change_pct": -6.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.mulligangolf.no/",
     "title": "Mulligan Indoor Golf | TrackMan-simulatorer i Fredrikstad og Sarpsborg",
@@ -8331,7 +8376,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/929074009",
       "type": "official_group_structure",
@@ -8458,6 +8503,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -8512,7 +8558,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/834144522",
       "type": "official_group_structure",
@@ -8646,6 +8692,7 @@
     "revenue_change_pct": 10.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.haugel.no/",
     "title": "Haugesund Elektriske AS",
@@ -8705,7 +8752,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/912492575",
       "type": "official_group_structure",
@@ -8832,6 +8879,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -8886,7 +8934,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/934515218",
       "type": "official_group_structure",
@@ -9020,6 +9068,7 @@
     "revenue_change_pct": 1918.5,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -9074,7 +9123,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/915707238",
       "type": "official_group_structure",
@@ -9208,6 +9257,7 @@
     "revenue_change_pct": -63.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://netad24.com/",
     "title": "netad24 | Publisher Affiliate Marketing Company",
@@ -9274,7 +9324,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/999656099",
       "type": "official_group_structure",
@@ -9408,6 +9458,7 @@
     "revenue_change_pct": -0.4,
     "compared_with_year": "2023"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -9462,7 +9513,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/920043356",
       "type": "official_group_structure",
@@ -9596,6 +9647,7 @@
     "revenue_change_pct": 0.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -9650,7 +9702,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/975822567",
       "type": "official_group_structure",
@@ -9784,6 +9836,7 @@
     "revenue_change_pct": -53.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -9838,7 +9891,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/925321419",
       "type": "official_group_structure",
@@ -9970,6 +10023,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -10024,7 +10078,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/924061847",
       "type": "official_group_structure",
@@ -10146,6 +10200,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -10200,7 +10255,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/836686462",
       "type": "official_group_structure",
@@ -10334,6 +10389,7 @@
     "revenue_change_pct": 15.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -10388,7 +10444,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/968468235",
       "type": "official_group_structure",
@@ -10522,6 +10578,7 @@
     "revenue_change_pct": 5.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.indigoboom.no/",
     "title": "Indigoboom digital distribusjon Oslo",
@@ -10608,7 +10665,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/914248906",
       "type": "official_group_structure",
@@ -10742,6 +10799,7 @@
     "revenue_change_pct": 0.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -10796,7 +10854,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/927901722",
       "type": "official_group_structure",
@@ -10930,6 +10988,7 @@
     "revenue_change_pct": 10.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://stoaautorep.no/",
     "title": "Bilverksted i Arendal - MECA bilverksted - Stoa Autorep",
@@ -10995,7 +11054,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/920918204",
       "type": "official_group_structure",
@@ -11122,6 +11181,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -11176,7 +11236,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/932386933",
       "type": "official_group_structure",
@@ -11310,6 +11370,7 @@
     "revenue_change_pct": 1.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -11364,7 +11425,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/997352572",
       "type": "official_group_structure",
@@ -11496,6 +11557,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -11682,6 +11744,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -11736,7 +11799,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/996927903",
       "type": "official_group_structure",
@@ -11863,6 +11926,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -11917,7 +11981,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/934244443",
       "type": "official_group_structure",
@@ -12051,6 +12115,7 @@
     "revenue_change_pct": -6.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://knelektro.no/",
     "title": "Forside - KN Elektro",
@@ -12116,7 +12181,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/823147112",
       "type": "official_group_structure",
@@ -12250,6 +12315,7 @@
     "revenue_change_pct": -0.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -12304,7 +12370,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/987454709",
       "type": "official_group_structure",
@@ -12438,6 +12504,7 @@
     "revenue_change_pct": -0.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -12492,7 +12559,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/976746651",
       "type": "official_group_structure",
@@ -12614,6 +12681,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -12668,7 +12736,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/934940792",
       "type": "official_group_structure",
@@ -12802,6 +12870,7 @@
     "revenue_change_pct": -27.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -12856,7 +12925,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/918270205",
       "type": "official_group_structure",
@@ -12988,6 +13057,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -13042,7 +13112,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/994570757",
       "type": "official_group_structure",
@@ -13171,6 +13241,7 @@
     "revenue_change_pct": -22.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -13225,7 +13296,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/833894862",
       "type": "official_group_structure",
@@ -13359,6 +13430,7 @@
     "revenue_change_pct": -100.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -13413,7 +13485,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/916108141",
       "type": "official_group_structure",
@@ -13535,6 +13607,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -13721,6 +13794,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -13775,7 +13849,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/914189934",
       "type": "official_group_structure",
@@ -13909,6 +13983,7 @@
     "revenue_change_pct": 6.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://ralstonbau.com/en",
     "title": "Home | \tRalston Bau",
@@ -13978,7 +14053,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/991368000",
       "type": "official_group_structure",
@@ -14110,6 +14185,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -14164,7 +14240,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/930883247",
       "type": "official_group_structure",
@@ -14298,6 +14374,7 @@
     "revenue_change_pct": -13.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -14352,7 +14429,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/914277752",
       "type": "official_group_structure",
@@ -14486,6 +14563,7 @@
     "revenue_change_pct": 8.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -14540,7 +14618,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/989970356",
       "type": "official_group_structure",
@@ -14662,6 +14740,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -14716,7 +14795,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/936073840",
       "type": "official_group_structure",
@@ -14850,6 +14929,7 @@
     "revenue_change_pct": 7.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.orjeregnskap.no/",
     "title": "Ørje Regnskapskontor AS",
@@ -14909,7 +14989,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/913876954",
       "type": "official_group_structure",
@@ -15043,6 +15123,7 @@
     "revenue_change_pct": 20.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -15097,7 +15178,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/979775288",
       "type": "official_group_structure",
@@ -15231,6 +15312,7 @@
     "revenue_change_pct": -100.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -15285,7 +15367,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/928430359",
       "type": "official_group_structure",
@@ -15419,6 +15501,7 @@
     "revenue_change_pct": 2.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -15473,7 +15556,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/987326999",
       "type": "official_group_structure",
@@ -15605,6 +15688,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -15659,7 +15743,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/915483976",
       "type": "official_group_structure",
@@ -15791,6 +15875,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -15845,7 +15930,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/918859632",
       "type": "official_group_structure",
@@ -15979,6 +16064,7 @@
     "revenue_change_pct": 6.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -16033,7 +16119,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/988185132",
       "type": "official_group_structure",
@@ -16165,6 +16251,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -16219,7 +16306,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/927440725",
       "type": "official_group_structure",
@@ -16351,6 +16438,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -16405,7 +16493,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/887820082",
       "type": "official_group_structure",
@@ -16539,6 +16627,7 @@
     "revenue_change_pct": 20.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.primecargo.no/",
     "title": "Prime Cargo - Norges mest fleksible logistikkpartner",
@@ -16598,7 +16687,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/886757972",
       "type": "official_group_structure",
@@ -16732,6 +16821,7 @@
     "revenue_change_pct": -5.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -16786,7 +16876,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/921206232",
       "type": "official_group_structure",
@@ -16920,6 +17010,7 @@
     "revenue_change_pct": -28.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -16974,7 +17065,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/918863877",
       "type": "official_group_structure",
@@ -17096,6 +17187,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -17150,7 +17242,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/935641403",
       "type": "official_group_structure",
@@ -17282,6 +17374,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -17336,7 +17429,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/931975552",
       "type": "official_group_structure",
@@ -17470,6 +17563,7 @@
     "revenue_change_pct": 19.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -17658,6 +17752,7 @@
     "revenue_change_pct": 11.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.vivify.no/",
     "title": "Vivify | Bygginnredning for næringsbygg i hele Norge",
@@ -17869,6 +17964,7 @@
     "revenue_change_pct": 52.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -17923,7 +18019,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/923219137",
       "type": "official_group_structure",
@@ -18057,6 +18153,7 @@
     "revenue_change_pct": -6.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -18111,7 +18208,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/999536999",
       "type": "official_group_structure",
@@ -18245,6 +18342,7 @@
     "revenue_change_pct": -12.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.armat.se/no",
     "title": "Takplater, veggplater og takrennesystemer |  - ArcelorMittal",
@@ -18321,7 +18419,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/976289862",
       "type": "official_group_structure",
@@ -18455,6 +18553,7 @@
     "revenue_change_pct": -71.7,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -18643,6 +18742,7 @@
     "revenue_change_pct": -13.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -18697,7 +18797,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/984590881",
       "type": "official_group_structure",
@@ -18831,6 +18931,7 @@
     "revenue_change_pct": 25.8,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -18885,7 +18986,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/991687343",
       "type": "official_group_structure",
@@ -19019,6 +19120,7 @@
     "revenue_change_pct": 13.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -19205,6 +19307,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -19393,6 +19496,7 @@
     "revenue_change_pct": 79.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": true,
    "website": {
     "url": "https://norgesvinduet.no/",
     "title": "Home - Norgesvinduet",
@@ -19452,7 +19556,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/959189412",
       "type": "official_group_structure",
@@ -19475,7 +19579,7 @@
      "field": "website",
      "label": "Company website",
      "status": "available",
-     "value": "https://norgesvinduet.no/",
+     "value": "https://norgesvinduet.no/ (listed in the business register; not confirmed as the company's own site)",
      "note": null,
      "source": {
       "url": "https://norgesvinduet.no/",
@@ -19581,6 +19685,7 @@
     "revenue_change_pct": 26.1,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://udelt.no/",
     "title": "Udelt AS",
@@ -19640,7 +19745,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/932925982",
       "type": "official_group_structure",
@@ -19772,6 +19877,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -19826,7 +19932,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/992238917",
       "type": "official_group_structure",
@@ -19948,6 +20054,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -20002,7 +20109,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/934938011",
       "type": "official_group_structure",
@@ -20136,6 +20243,7 @@
     "revenue_change_pct": 4127.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://www.konseptbygg.no/",
     "title": "Konseptbygg - boligbygger Bergen",
@@ -20195,7 +20303,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/970979026",
       "type": "official_group_structure",
@@ -20329,6 +20437,7 @@
     "revenue_change_pct": 7.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -20517,6 +20626,7 @@
     "revenue_change_pct": -62.4,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -20571,7 +20681,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/931417215",
       "type": "official_group_structure",
@@ -20703,6 +20813,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -20757,7 +20868,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/922971684",
       "type": "official_group_structure",
@@ -20884,6 +20995,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -20938,7 +21050,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/934270266",
       "type": "official_group_structure",
@@ -21072,6 +21184,7 @@
     "revenue_change_pct": 32.0,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -21126,7 +21239,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/898872882",
       "type": "official_group_structure",
@@ -21260,6 +21373,7 @@
     "revenue_change_pct": 3.2,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -21448,6 +21562,7 @@
     "revenue_change_pct": 20.5,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "website": {
     "url": "https://naringsokonomi.no/",
     "title": "Næringsøkonomi AS | Autorisert regnskapsfører i Oslo",
@@ -21507,7 +21622,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/987564911",
       "type": "official_group_structure",
@@ -21629,6 +21744,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -21683,7 +21799,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/936673066",
       "type": "official_group_structure",
@@ -21817,6 +21933,7 @@
     "revenue_change_pct": 1288.9,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -21871,7 +21988,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/913258460",
       "type": "official_group_structure",
@@ -22003,6 +22120,7 @@
      }
     ]
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -22057,7 +22175,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/915216102",
       "type": "official_group_structure",
@@ -22191,6 +22309,7 @@
     "revenue_change_pct": 2.6,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -22245,7 +22364,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/996284212",
       "type": "official_group_structure",
@@ -22379,6 +22498,7 @@
     "revenue_change_pct": -15.3,
     "compared_with_year": "2024"
    },
+   "website_unconfirmed": false,
    "facts": [
     {
      "field": "registry",
@@ -22433,7 +22553,7 @@
      "label": "Group structure",
      "status": "not_found",
      "value": null,
-     "note": "HTTP 404",
+     "note": "The register has no group structure for this company",
      "source": {
       "url": "https://data.brreg.no/enhetsregisteret/api/konsernstruktur/993327182",
       "type": "official_group_structure",
