@@ -40,6 +40,8 @@ Open `out/viewer.html` in a browser. Search by company name or organisation numb
 
 Version 4 omits punctuation-only descriptions and domain-only portfolio titles from both claims and summaries, and news and social links keep the page that supplied them. The original source records stay intact. A live run on 120 companies not used during development (`select_entry_batch.py --seed 20261103`) returned 120 of 120 envelopes in 248 seconds with validation passed. An offline 300-company test checks that every input still gets a terminal envelope when sources fail.
 
+`site/signalpost-companies.json` holds the data for the Signalpost site entered for the JBOX bonus: the 120 companies of that live run, each fact with its source and fetch time, and no person names, e-mail addresses, phone numbers or street addresses. `scripts/build_site_dataset.py` builds it from `profiles.jsonl`.
+
 ## What each envelope contains
 
 The envelope keeps the starter's fields (`run_id`, `organisation_number`, `state`, `modules`, `profile`) and adds the claim contract:
