@@ -46,6 +46,28 @@ def _attempt(record: dict[str, Any], domain: str, origin: str) -> dict[str, Any]
     }
 
 
+def _withheld_attempt(attempt: dict[str, Any]) -> dict[str, Any]:
+    """What the envelope says about a candidate that was not published: how it was found and how it ended.
+
+    The domain, URL and page details stay out. A site that did not prove the legal entity may belong to another
+    company, and naming it in this company's envelope would publish a claim about that other company.
+    """
+    status = attempt.get("fetch_status")
+    outcome = "identity_not_proven" if status == "available" else "did_not_resolve" if status == "not_found" else "could_not_be_read"
+    return {"origin": attempt.get("origin"), "outcome": outcome}
+
+
+def _withheld_site(record: dict[str, Any]) -> dict[str, Any]:
+    """Stand-in for a register-listed site that was not published. It keeps the outcome and drops the URL and content."""
+    reached = record.get("status") == "available"
+    return evidence(
+        "website", "not_found" if reached else str(record.get("status") or "not_found"), "registry_linked_company_website", REGISTRY_SOURCE,
+        value={"candidate_withheld": reached},
+        note=("The site the register lists was reached but did not prove the exact legal entity, so nothing from it is published"
+              if reached else "The site the register lists could not be read, and no other candidate proved the exact legal entity"),
+    )
+
+
 def research_company(
     profile: dict[str, Any],
     *,
@@ -108,7 +130,7 @@ def research_company(
     if published is not None:
         records["website"] = published
     elif registry_record is not None:
-        records["website"] = registry_record
+        records["website"] = _withheld_site(registry_record)
     else:
         records["website"] = evidence("website", "not_found", "registry_linked_company_website", REGISTRY_SOURCE, note="No registry website, and no candidate site passed the identity gate")
 
@@ -118,7 +140,10 @@ def research_company(
         "available" if published is not None else "not_found",
         "candidate_generation_with_identity_gate",
         site_url,
-        value={"attempts": attempts, "published_origin": (published.get("value") or {}).get("discovery_origin") if published else None},
+        # The published candidate is always the last attempt; every other candidate is reported without its address.
+        value={"attempts": [attempt if published is not None and index == len(attempts) - 1 else _withheld_attempt(attempt)
+                            for index, attempt in enumerate(attempts)],
+               "published_origin": (published.get("value") or {}).get("discovery_origin") if published else None},
         note=None if published is not None else "Candidates tried: registry website, registry e-mail domain and legal-name domains; none proved the exact entity",
     )
 
@@ -132,12 +157,29 @@ def research_company(
     value = (published or {}).get("value") or {}
     site_note = "No verified company website, so no company-owned source was available to check"
     social = value.get("social_links") or []
+    # Profiles that did not name the company are counted, not listed: an unproven profile may be another company's.
+    assessments = list(value.get("social_link_assessments") or [])
+    quarantined = sum(1 for item in assessments if not item.get("publishable"))
+    if published is not None:
+        value["social_link_assessments"] = [item for item in assessments if item.get("publishable")]
+        value["discovered_social_links"] = list(social)
+        value["quarantined_social_links"] = quarantined
+        value["other_organisation_numbers_count"] = len(value.get("other_organisation_numbers") or [])
+        value["other_organisation_numbers"] = []
+        (value.get("identity_assessment") or {}).pop("other_organisation_numbers", None)
+        # The site's structured data can point at a parent's or a platform's profile. Keep only the links that
+        # passed the profile check above.
+        kept = {str(item.get("url") or "").rstrip("/") for item in social}
+        for organisation in value.get("structured_organisations") or []:
+            if isinstance(organisation, dict) and organisation.get("sameAs"):
+                links = organisation["sameAs"] if isinstance(organisation["sameAs"], list) else [organisation["sameAs"]]
+                organisation["sameAs"] = [link for link in links if str(link).rstrip("/") in kept]
     records["company_profiles"] = evidence(
         "company_profiles",
         "available" if social else "not_found",
         "company_owned_outbound_links",
         site_url,
-        value={"profiles": social, "quarantined": [item for item in value.get("social_link_assessments", []) if not item.get("publishable")]},
+        value={"profiles": social, "quarantined_count": quarantined},
         note=None if social else ("Verified company site links no profile that names the company" if published else site_note),
         content_sha256=(published or {}).get("content_sha256"),
     )

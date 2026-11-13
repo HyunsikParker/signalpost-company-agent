@@ -170,14 +170,20 @@ def _compact(value: Any) -> str:
 def assess_site_identity(profile: dict[str, Any], website: dict[str, Any]) -> dict[str, Any]:
     """Publication gate for a crawled company site, whichever way the site was found.
 
-    An organisation number shown on a single-company page is exact proof. Otherwise the legal name must match
-    the homepage identity (the reference rule), and a site found without an official link to the entity also
-    needs a registry fact (phone, street address or e-mail) repeated on its pages.
+    An organisation number shown on a single-company page is exact proof. Without it the site must tie itself to
+    the registered entity some other way: the legal name together with a registry fact (phone, street address or
+    e-mail) or the registered place. A matching name alone is not enough, even on the domain the register lists,
+    because a namesake abroad matches just as well. A site that shows other entities' organisation numbers and
+    never this company's is a sister or parent company's site and is not published.
     """
     value = website.get("value") or {}
     proof = value.get("identity_proof") or {}
     origin = value.get("discovery_origin") or "registry_website"
     others = int(proof.get("other_organisation_numbers_on_page") or 0) if proof else 0
+    foreign_numbers = [str(number) for number in value.get("other_organisation_numbers") or []]
+    own_number_seen = bool(proof) or bool(value.get("own_organisation_number_seen"))
+    foreign_only = bool(foreign_numbers) and not own_number_seen
+    tied_to_register = bool(value.get("registry_corroborations")) or bool(value.get("registry_place_matches"))
     blanked = {**value, "identity_text_excerpt": "", "pages": [{**page, "identity_text_excerpt": ""} for page in value.get("pages", [])]}
     reference = assess_website_identity({**profile, "evidence": {**profile.get("evidence", {}), "website": {**website, "value": blanked}}})
     name_exact = reference["score"] >= 0.95
@@ -192,6 +198,10 @@ def assess_site_identity(profile: dict[str, Any], website: dict[str, Any]) -> di
     elif proof and others <= 2 and name_exact:
         score = 0.97
         reasons.append("organisation number appears beside other entities' numbers, and the legal name matches the homepage")
+    elif foreign_only:
+        score = min(reference["score"], 0.85)
+        reasons.append("the site shows another entity's organisation number (" + ", ".join(foreign_numbers[:2])
+                       + ") and never this company's")
     elif value.get("legal_name_span") and corroborating:
         score = 0.96
         reasons.append("the legal name and a registry fact appear on the site: " + corroborating[0])
@@ -200,12 +210,18 @@ def assess_site_identity(profile: dict[str, Any], website: dict[str, Any]) -> di
         score = 0.93
         reasons.append("the full registered name, legal form included, and the registered place ("
                        + ", ".join(value["registry_place_matches"][:2]) + ") appear on the site")
-    elif origin == "registry_website" and name_exact:
+    elif origin == "registry_website" and name_exact and tied_to_register:
         score = reference["score"]
         reasons.extend(reference["reasons"])
-    elif origin == "registry_email_domain" and name_exact:
+        reasons.append("the registered place or a registry fact also appears on the site")
+    elif origin == "registry_email_domain" and name_exact and tied_to_register:
         score = 0.95
-        reasons.append("site is the domain of the registry e-mail address and the legal name matches the homepage")
+        reasons.append("site is the domain of the registry e-mail address, the legal name matches the homepage, "
+                       "and the registered place or a registry fact appears on the site")
+    elif origin in ("registry_website", "registry_email_domain") and name_exact:
+        score = min(reference["score"], 0.85)
+        reasons.append("the name matches the homepage, but nothing on the site ties it to the registered entity: "
+                       "no organisation number, registry phone, address, e-mail or registered place")
     elif origin == "legal_name_domain_guess" and name_exact and corroborating:
         score = 0.95
         reasons.append("legal name matches the homepage and a registry fact repeats on the site: " + corroborating[0])
@@ -226,7 +242,8 @@ def assess_site_identity(profile: dict[str, Any], website: dict[str, Any]) -> di
         "reasons": reasons,
         "registry_corroborations": corroborating,
         "discovery_origin": origin,
-        "method": "deterministic_org_number_name_registry_evidence_v3",
+        "other_organisation_numbers": foreign_numbers,
+        "method": "deterministic_org_number_name_registry_evidence_v4",
     }
 
 

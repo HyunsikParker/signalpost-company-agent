@@ -194,14 +194,19 @@ class ContractBuilder:
         value = record.get("value") or {}
         assessment = value.get("identity_assessment") or {}
         if record.get("status") != "available":
-            self.absent("official_website", "official_website", record or None)
-            self.absent("company_description", "company_description", record or None,
+            # A register-listed site that was reached but not proven is reported as ambiguous, without its address.
+            state = "ambiguous" if value.get("candidate_withheld") else None
+            self.absent("official_website", "official_website", record or None, availability=state)
+            self.absent("company_description", "company_description", record or None, availability=state,
                         note="No verified company site was available for a description")
             return None
         if not assessment.get("publishable"):
-            self.absent("official_website", "official_website", record, availability="ambiguous",
-                        note="A candidate site was reached but did not prove the exact legal entity: " + "; ".join(assessment.get("reasons") or [])[:300])
-            self.absent("company_description", "company_description", record, availability="ambiguous",
+            # Profiles stored before the pipeline withheld unproven sites can still carry one. Its address and
+            # its reasons stay out: they describe a site that may belong to another company.
+            unproven = {key: record.get(key) for key in ("field", "status", "source_class", "retrieved_at")}
+            self.absent("official_website", "official_website", unproven, availability="ambiguous",
+                        note="A candidate site was reached but did not prove the exact legal entity, so nothing from it is published")
+            self.absent("company_description", "company_description", unproven, availability="ambiguous",
                         note="The candidate website did not pass the exact-entity identity gate")
             return None
         proof = value.get("identity_proof") or {}

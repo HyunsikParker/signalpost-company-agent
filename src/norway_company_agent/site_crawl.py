@@ -203,6 +203,11 @@ def crawl_site(
                 "other_organisation_numbers_on_page": len(others),
             }
             break
+    # Every valid organisation number seen on the crawled pages. A site that shows other entities' numbers and
+    # never this company's belongs to someone else, however well the name and address match.
+    seen_numbers: set[str] = set()
+    for page in pages:
+        seen_numbers |= page["org_numbers"]
     corroborating = []
     places: list[str] = []
     full_pattern = full_legal_name_pattern(legal_name)
@@ -247,6 +252,8 @@ def crawl_site(
         "crawl_errors": crawl_errors,
         "discovery_origin": origin,
         "identity_proof": proof,
+        "own_organisation_number_seen": org in seen_numbers,
+        "other_organisation_numbers": sorted(seen_numbers - {org})[:8],
         "registry_corroborations": corroborating,
         "legal_name_span": next((page["name_span"] for page in pages if page["name_span"]), None),
         "full_legal_name_span": full_span,

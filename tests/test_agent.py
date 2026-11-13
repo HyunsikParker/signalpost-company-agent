@@ -122,8 +122,27 @@ class IdentityGateTest(unittest.TestCase):
         self.assertEqual(place_corroborations("Milano Eidsvoll, Eidsvoll sentrum", row, "MILANO EIDSVOLL AS"), [])
         self.assertEqual(place_corroborations("Milano Eidsvoll, Råholt", row, "MILANO EIDSVOLL AS"), ["RÅHOLT"])
 
-    def test_registry_e_mail_domain_with_matching_name_is_exact(self):
-        record = site({"title": "Fjord Elektro AS", "discovery_origin": "registry_email_domain"})
+    def test_registry_domain_with_matching_name_needs_a_tie_to_the_register(self):
+        for origin in ("registry_email_domain", "registry_website"):
+            record = site({"title": "Fjord Elektro AS", "discovery_origin": origin})
+            assessment = assess_site_identity(profile(), record)
+            self.assertFalse(assessment["publishable"], origin)
+            self.assertIn("nothing on the site ties it", assessment["reasons"][0])
+            record["value"]["registry_place_matches"] = ["LAKSELV"]
+            self.assertTrue(assess_site_identity(profile(), record)["publishable"], origin)
+            record["value"].update(registry_place_matches=[], registry_corroborations=["registry telefon 51 68 57 00 appears on the page"])
+            self.assertTrue(assess_site_identity(profile(), record)["publishable"], origin)
+
+    def test_another_entitys_number_without_ours_never_publishes(self):
+        record = site({"title": "Fjord Elektro", "discovery_origin": "registry_website",
+                       "legal_name_span": "Fjord Elektro er en del av gruppen", "registry_place_matches": ["LAKSELV"],
+                       "registry_corroborations": ["registry business address 'Strandgata 21' appears on the page"],
+                       "other_organisation_numbers": ["987654325"], "own_organisation_number_seen": False})
+        assessment = assess_site_identity(profile(), record)
+        self.assertFalse(assessment["publishable"])
+        self.assertIn("another entity's organisation number (987654325)", assessment["reasons"][0])
+        self.assertEqual(assessment["other_organisation_numbers"], ["987654325"])
+        record["value"]["own_organisation_number_seen"] = True
         self.assertTrue(assess_site_identity(profile(), record)["publishable"])
 
     def test_parked_domain_never_publishes(self):
@@ -149,6 +168,77 @@ class IdentityGateTest(unittest.TestCase):
                        "social_links": [{"platform": "facebook", "url": "https://facebook.com/fjordelektro"}]})
         gated = gate_company_site(profile(), record)
         self.assertEqual(gated["value"]["social_links"], [])
+
+
+class WithheldCandidateTest(unittest.TestCase):
+    """A site that did not prove the legal entity is not named anywhere in the published profile."""
+
+    GUESSES = [{"domain": "fjordelektro.com", "origin": "legal_name_domain_guess"}, {"domain": "fjord-elektro.no", "origin": "legal_name_domain_guess"}]
+
+    def research(self, records: dict, registry_website: str | None = None) -> dict:
+        from unittest.mock import patch
+
+        from norway_company_agent import pipeline
+
+        company = profile()
+        company["evidence"]["registry"] = {"field": "registry", "status": "available", "source_url": "https://data.brreg.no/x",
+                                           "retrieved_at": "2026-10-16T00:00:00Z", "content_sha256": "b" * 64,
+                                           "source_class": "official_registry_bulk", "value": {"navn": "FJORD ELEKTRO AS"}}
+        if registry_website:
+            company["website"] = registry_website
+        with patch.object(pipeline, "crawl_site", lambda url, **kwargs: (records[url.split("//", 1)[-1].strip("/")], [])), \
+                patch.object(pipeline, "resolving_host", lambda domain: domain if domain in records else None), \
+                patch.object(pipeline, "candidate_sites", lambda company, row: list(self.GUESSES)):
+            pipeline.research_company(company, signals=False)
+        return company
+
+    def test_namesake_found_by_a_domain_guess_leaves_no_address(self):
+        import json
+
+        namesake = site({"final_url": "https://www.fjordelektro.com/", "registered_domain": "fjordelektro.com", "title": "Fjord Elektro",
+                         "discovery_origin": "legal_name_domain_guess", "main_text_excerpt": "x" * 200})
+        company = self.research({"fjordelektro.com": namesake})
+        published = json.dumps(company["evidence"])
+        self.assertNotIn("fjordelektro.com", published)
+        self.assertNotIn("fjord-elektro", published)
+        self.assertEqual(company["evidence"]["website"]["status"], "not_found")
+        self.assertEqual(company["evidence"]["website_discovery"]["value"]["attempts"],
+                         [{"origin": "legal_name_domain_guess", "outcome": "identity_not_proven"},
+                          {"origin": "legal_name_domain_guess", "outcome": "did_not_resolve"}])
+
+    def test_register_listed_site_of_another_entity_is_withheld(self):
+        import json
+
+        manager = site({"final_url": "https://www.manager-example.no/", "registered_domain": "manager-example.no", "title": "Forvaltning",
+                        "discovery_origin": "registry_website", "legal_name_span": "Fjord Elektro",
+                        "registry_corroborations": ["registry business address 'Strandgata 21' appears on the page"],
+                        "other_organisation_numbers": ["987654325"], "own_organisation_number_seen": False,
+                        "social_links": [{"platform": "facebook", "url": "https://www.facebook.com/managerexample"}]})
+        company = self.research({"www.manager-example.no": manager}, registry_website="www.manager-example.no")
+        contract = build_contract(company)
+        published = json.dumps(company["evidence"]) + json.dumps(contract)
+        for leaked in ("manager-example", "987654325", "managerexample"):
+            self.assertNotIn(leaked, published)
+        self.assertTrue(company["evidence"]["website"]["value"]["candidate_withheld"])
+        states = {claim["field"]: claim["availability"] for claim in contract["claims"] if claim["family"] in ("official_website", "company_description")}
+        self.assertEqual(states, {"official_website": "ambiguous", "company_description": "ambiguous"})
+
+    def test_published_site_lists_only_the_profiles_that_name_the_company(self):
+        import json
+
+        own = site({"final_url": "https://www.fjordelektro.no/", "registered_domain": "fjordelektro.no", "title": "Fjord Elektro AS",
+                    "discovery_origin": "registry_website",
+                    "identity_proof": {"page_url": "https://www.fjordelektro.no/kontakt", "other_organisation_numbers_on_page": 0, "claim_span": "Org.nr 810 034 882"},
+                    "social_links": [{"platform": "facebook", "url": "https://www.facebook.com/fjordelektro"},
+                                     {"platform": "linkedin", "url": "https://www.linkedin.com/company/nordic-power-group"}],
+                    "structured_organisations": [{"name": "Fjord Elektro AS", "sameAs": ["https://www.facebook.com/fjordelektro",
+                                                                                         "https://www.linkedin.com/company/nordic-power-group"]}]})
+        company = self.research({"www.fjordelektro.no": own}, registry_website="www.fjordelektro.no")
+        published = json.dumps(company["evidence"])
+        self.assertIn("facebook.com/fjordelektro", published)
+        self.assertNotIn("nordic-power-group", published)
+        self.assertEqual(company["evidence"]["company_profiles"]["value"]["quarantined_count"], 1)
+        self.assertEqual(company["evidence"]["website"]["value"]["quarantined_social_links"], 1)
 
 
 class SignalParserTest(unittest.TestCase):
@@ -266,7 +356,8 @@ class ContractTest(unittest.TestCase):
         roles = {"field": "roles", "status": "available", "source_url": "https://data.brreg.no/r", "retrieved_at": "2026-10-16T00:00:00Z",
                  "value": {"roles": [{"name": ["REVISJON", "AS"], "role": "Revisor", "role_code": "REVI", "organisation_number": "123456785"},
                                      {"name": "Kari Nordmann", "role": "Daglig leder", "role_code": "DAGL"}]}}
-        website = site({"title": "Fjord Elektro AS", "discovery_origin": "registry_email_domain", "description": "Elektriker i Sandnes"})
+        website = site({"title": "Fjord Elektro AS", "discovery_origin": "registry_email_domain", "description": "Elektriker i Sandnes",
+                        "registry_place_matches": ["SANDNES"]})
         record = {"organisation_number": "810034882", "name": "FJORD ELEKTRO AS", "evidence": {"registry": registry, "roles": roles}}
         record["evidence"]["website"] = gate_company_site(record, website)
         contract = build_contract(record)
