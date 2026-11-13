@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from norway_company_agent.contract import build_contract  # noqa: E402
+from norway_company_agent.contract import build_contract, empty_synthesis  # noqa: E402
 from norway_company_agent.identity import assess_owned_profile, assess_site_identity, gate_company_site  # noqa: E402
 from norway_company_agent.nav_jobs import NavJobIndex, name_key  # noqa: E402
 from norway_company_agent.refresh import change_note  # noqa: E402
@@ -277,8 +277,39 @@ class ContractTest(unittest.TestCase):
         evidence_ids = {item["id"] for item in contract["evidence"]}
         for claim in contract["claims"]:
             self.assertTrue(set(claim["evidence_ids"]) <= evidence_ids)
-        self.assertIn("Daglig leder Kari Nordmann", contract["summary"]["text"])
+        self.assertIn("Daglig leder Kari Nordmann", contract["summary"])
         self.assertEqual(build_contract(json.loads(json.dumps(record)))["evidence"], contract["evidence"])
+
+    def test_summary_is_a_string_and_synthesis_carries_its_parts_and_sources(self):
+        registry = {"field": "registry", "status": "available", "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+                    "retrieved_at": "2026-10-16T00:00:00Z", "content_sha256": "c" * 64, "source_class": "official_registry_bulk",
+                    "value": {"navn": "FJORD ELEKTRO AS", "organisasjonsform.beskrivelse": "Aksjeselskap", "stiftelsesdato": "2011-03-04",
+                              "konkurs": "false", "underAvvikling": "false", "forretningsadresse.poststed": "SANDNES",
+                              "vedtektsfestetFormaal": "Elektroinstallasjon og handel med elektrisk utstyr."}}
+        record = {"organisation_number": "810034882", "name": "FJORD ELEKTRO AS", "evidence": {"registry": registry}}
+        contract = build_contract(record, change_note=change_note([], False))
+        summary, synthesis = contract["summary"], contract["synthesis"]
+        self.assertIsInstance(summary, str)
+        self.assertEqual(synthesis["summary"], summary)
+        self.assertTrue(synthesis["what_it_does"].startswith("FJORD ELEKTRO AS is a Norwegian aksjeselskap in Sandnes"))
+        self.assertIn("Its registered purpose is “Elektroinstallasjon og handel med elektrisk utstyr”.", synthesis["what_it_does"])
+        self.assertEqual(synthesis["what_changed"], "Changes: not assessed, because no earlier run of this agent covers this company.")
+        self.assertIn("no website could be verified as this exact company, so no site-based profiles, contacts or posts were collected", synthesis["unknowns"])
+        self.assertTrue(summary.endswith("Sources: data.brreg.no."))
+        self.assertEqual([page["source_url"] for page in synthesis["sources"]], [registry["source_url"]])
+        self.assertEqual(synthesis["sources"][0]["retrieved_at"], "2026-10-16T00:00:00Z")
+        evidence_ids = {item["id"] for item in contract["evidence"]}
+        self.assertTrue(synthesis["evidence_ids"])
+        self.assertTrue(set(synthesis["evidence_ids"]) <= evidence_ids)
+        for part in ("FJORD ELEKTRO AS is a Norwegian aksjeselskap in Sandnes, founded in 2011.", synthesis["what_changed"], *synthesis["unknowns"]):
+            self.assertIn(part, summary)
+
+    def test_empty_synthesis_says_that_nothing_is_claimed(self):
+        unbuilt = empty_synthesis("its claims could not be built from the collected records")
+        self.assertIsInstance(unbuilt["summary"], str)
+        self.assertIn("Nothing is claimed about the company.", unbuilt["summary"])
+        self.assertEqual(unbuilt["unknowns"], ["its claims could not be built from the collected records"])
+        self.assertEqual((unbuilt["evidence_ids"], unbuilt["sources"]), ([], []))
 
     def test_summary_explains_status_purpose_changes_and_unknowns(self):
         registry = {"field": "registry", "status": "available", "source_url": "https://data.brreg.no/x", "retrieved_at": "2026-10-16T00:00:00Z",
@@ -289,7 +320,7 @@ class ContractTest(unittest.TestCase):
         jobs = {"field": "jobs", "status": "not_found", "source_url": "https://pam-stilling-feed.nav.no/api/v1/feed", "retrieved_at": "2026-10-16T00:00:00Z",
                 "value": {"postings": [], "site_checked": False, "nav_feed": {"status": "ready"}}}
         record = {"organisation_number": "810034882", "name": "FJORD ELEKTRO AS", "evidence": {"registry": registry, "jobs": jobs}}
-        text = build_contract(record, change_note=change_note([], False))["summary"]["text"]
+        text = build_contract(record, change_note=change_note([], False))["summary"]
         self.assertIn("founded in 2011", text)
         self.assertIn("The registry records no bankruptcy or winding-up.", text)
         self.assertIn("Its registered purpose is “Elektroinstallasjon, handel med elektrisk utstyr", text)

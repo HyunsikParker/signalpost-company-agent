@@ -40,6 +40,8 @@ Open `out/viewer.html` in a browser. Search by company name or organisation numb
 
 Version 4 omits punctuation-only descriptions and domain-only portfolio titles from both claims and summaries, and news and social links keep the page that supplied them. The original source records stay intact. A live run on 120 companies not used during development (`select_entry_batch.py --seed 20261103`) returned 120 of 120 envelopes in 248 seconds with validation passed. An offline 300-company test checks that every input still gets a terminal envelope when sources fail.
 
+Version 6 changes only how the summary is written out. Up to version 5 `summary` was an object with the paragraph under `text`; it is now the paragraph itself, as a string, and the new `synthesis` object carries the same paragraph with its parts and sources. The paragraph also ends by naming the sites its facts come from. Claims and evidence are unchanged: rebuilt offline from the stored profiles of the 120-company live run, all 120 companies give the same claims and evidence as version 5. The envelopes in `smoke/` are from the version 3 run and still show the older object form.
+
 `site/signalpost-companies.json` holds the data for the Signalpost site entered for the JBOX bonus: the 120 companies of that live run, each fact with its source and fetch time, and no person names, e-mail addresses, phone numbers or street addresses. `scripts/build_site_dataset.py` builds it from `profiles.jsonl`.
 
 ## What each envelope contains
@@ -51,7 +53,8 @@ The envelope keeps the starter's fields (`run_id`, `organisation_number`, `state
 | `run` | run id, start and end time, terminal status |
 | `claims` | `family`, `field`, `value`, `availability`, `confidence`, `evidence_ids`, and `reporting_period` or `effective_at` where one exists |
 | `evidence` | `id`, `source_url`, `source_class`, `retrieved_at`, `content_sha256`, `claim_span` |
-| `summary` | a short description built only from published claims: what the company is (form, place, industry, founding year, registry status, registered purpose or the site's own description, accounts, leaders, group), what changed since the previous run, and what could not be found or checked; with the evidence ids it rests on |
+| `summary` | a string: one paragraph built only from published claims. It says what the company is (form, place, industry, founding year, registry status, registered purpose or the site's own description, accounts, leaders, group), what changed since the previous run, what could not be found or checked, and which sites the facts come from |
+| `synthesis` | the same paragraph as `summary`, plus its parts: `what_it_does`, `what_changed`, `unknowns` (a list), `evidence_ids` (the evidence the paragraph rests on), `sources` (up to 12 pages behind that evidence, each with `source_url`, `source_class` and `retrieved_at`) and `method` |
 | `changes` | material differences from the previous run, with old and new evidence hashes |
 | `errors` | per-stage failures; a failing source never removes the envelope |
 | `operations` | requests, runtime and third-party cost (always 0) |

@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import hashlib
 from typing import Any
+from urllib.parse import urlsplit
 
 from .site_research import credible_activity, meaningful_description
 
+SYNTHESIS_METHOD = "deterministic_template_over_published_claims_v3"
 AVAILABILITY = {
     "available": "available",
     "not_found": "not_available",
@@ -264,10 +266,14 @@ class ContractBuilder:
                         availability="not_available" if dropped or activity.get("status") == "available" else None,
                         note="Only placeholder, domain-only portfolio or pre-founding items were found; none is published as dated activity" if dropped else None)
 
-    def summary(self, accounts: list[dict[str, Any]], roles: list[dict[str, Any]], site: dict[str, Any] | None, group: dict[str, Any] | None) -> dict[str, Any]:
+    def synthesis(self, accounts: list[dict[str, Any]], roles: list[dict[str, Any]], site: dict[str, Any] | None, group: dict[str, Any] | None) -> dict[str, Any]:
+        """The profile's explanation: one paragraph of prose, plus its parts (what the company does, what changed,
+        what is unknown) and the sources it rests on. Built only from published claims."""
         row = (self.records.get("registry") or {}).get("value") or {}
         name = row.get("navn") or self.profile.get("name")
         sentences = []
+        does: list[str] = []
+        changed: list[str] = []
         kind = row.get("organisasjonsform.beskrivelse") or row.get("organisasjonsform.kode") or "entity"
         place = row.get("forretningsadresse.poststed") or row.get("forretningsadresse.kommune")
         industry = row.get("naeringskode1.beskrivelse")
@@ -275,6 +281,7 @@ class ContractBuilder:
         intro = (f"{name} is a Norwegian {kind.lower()}" + (f" in {place.title()}" if place else "")
                  + (f", registered for {industry.lower()}" if industry else "") + (f", founded in {founded}" if founded.isdigit() else "") + ".")
         sentences.append(intro)
+        does.append(intro)
         if row.get("konkurs") == "true":
             sentences.append("The registry records it as bankrupt.")
         elif row.get("underAvvikling") == "true":
@@ -288,8 +295,10 @@ class ContractBuilder:
             sentences.append(f"The registry lists {employees} employee{'' if str(employees) == '1' else 's'}.")
         if site and site.get("description"):
             sentences.append(f"Its website describes the business as: “{site['description'][:220].strip()}”")
+            does.append(sentences[-1])
         elif row.get("vedtektsfestetFormaal"):
             sentences.append(f"Its registered purpose is “{_clip(row['vedtektsfestetFormaal'], 200).rstrip('.')}”.")
+            does.append(sentences[-1])
         if accounts:
             latest = accounts[0]
             parts = [f"revenue {_fmt_nok(latest['revenue'])}" if _fmt_nok(latest.get("revenue")) else None,
@@ -301,6 +310,7 @@ class ContractBuilder:
             if len(accounts) > 1 and isinstance(latest.get("revenue"), (int, float)) and isinstance(accounts[1].get("revenue"), (int, float)) and accounts[1]["revenue"]:
                 change = (latest["revenue"] - accounts[1]["revenue"]) / abs(accounts[1]["revenue"]) * 100
                 sentences.append(f"Revenue changed {change:+.0f}% from {accounts[1].get('year')}.")
+                changed.append(sentences[-1])
         leaders = [f"{item.get('role')} {item.get('name')}" for item in roles if item.get("role_code") in {"DAGL", "LEDE"}]
         if leaders:
             sentences.append("Leadership: " + "; ".join(leaders[:3]) + ".")
@@ -322,6 +332,7 @@ class ContractBuilder:
             sentences.append(f"Most recent dated activity on its site: “{activity[0]['title']}” ({activity[0]['date']}).")
         if self.change_note:
             sentences.append(self.change_note)
+            changed.append(self.change_note)
         jobs_value = (self.records.get("jobs") or {}).get("value") or {}
         nav_status = (jobs_value.get("nav_feed") or {}).get("status")
         unknowns = []
@@ -350,7 +361,32 @@ class ContractBuilder:
         if unknowns:
             sentences.append("Unknown: " + "; ".join(unknowns) + ".")
         cited = sorted({evidence_id for claim in self.claims if claim["availability"] == "available" for evidence_id in claim["evidence_ids"]})
-        return {"text": " ".join(sentences), "evidence_ids": cited, "unknowns": unknowns, "method": "deterministic_template_over_published_claims_v2"}
+        # The pages behind the cited evidence, most-used host first, so the prose can name where it comes from.
+        pages: dict[str, dict[str, Any]] = {}
+        host_use: dict[str, int] = {}
+        for evidence_id in cited:
+            item = self.evidence[evidence_id]
+            url = str(item.get("source_url") or "")
+            host = (urlsplit(url).hostname or "").removeprefix("www.")
+            if not url.startswith(("https://", "http://")) or not host:
+                continue
+            host_use[host] = host_use.get(host, 0) + 1
+            pages.setdefault(url, {"source_url": url, "source_class": item.get("source_class"), "retrieved_at": item.get("retrieved_at"), "host": host})
+        hosts = sorted(host_use, key=lambda host: (-host_use[host], host))
+        if hosts:
+            more = len(hosts) - 4
+            sentences.append("Sources: " + ", ".join(hosts[:4]) + (f" and {more} more" if more > 0 else "") + ".")
+        sources = sorted(pages.values(), key=lambda page: (hosts.index(page["host"]), page["source_url"]))[:12]
+        text = " ".join(sentences)
+        return {
+            "summary": text,
+            "what_it_does": " ".join(does),
+            "what_changed": " ".join(changed),
+            "unknowns": unknowns,
+            "evidence_ids": cited,
+            "sources": [{key: page[key] for key in ("source_url", "source_class", "retrieved_at")} for page in sources],
+            "method": SYNTHESIS_METHOD,
+        }
 
     def build(self) -> dict[str, Any]:
         self.identity()
@@ -360,8 +396,15 @@ class ContractBuilder:
         group = self.group()
         site = self.website()
         self.owned(site)
-        summary = self.summary(accounts, roles, site, group)
-        return {"claims": self.claims, "evidence": list(self.evidence.values()), "summary": summary}
+        synthesis = self.synthesis(accounts, roles, site, group)
+        # `summary` is the prose itself, as a string; `synthesis` repeats it with its parts and sources.
+        return {"claims": self.claims, "evidence": list(self.evidence.values()), "summary": synthesis["summary"], "synthesis": synthesis}
+
+
+def empty_synthesis(reason: str) -> dict[str, Any]:
+    """The synthesis of an envelope whose claims could not be assembled: it says so instead of staying silent."""
+    text = f"No profile could be assembled for this organisation number in this run: {reason}. Nothing is claimed about the company."
+    return {"summary": text, "what_it_does": "", "what_changed": "", "unknowns": [reason], "evidence_ids": [], "sources": [], "method": SYNTHESIS_METHOD}
 
 
 def build_contract(profile: dict[str, Any], change_note: str | None = None) -> dict[str, Any]:

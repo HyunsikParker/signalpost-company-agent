@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from norway_company_agent.batch import profile_complete_for_modules, terminal_envelope, validate_envelopes  # noqa: E402
-from norway_company_agent.contract import build_contract  # noqa: E402
+from norway_company_agent.contract import build_contract, empty_synthesis  # noqa: E402
 from norway_company_agent.evidence import evidence, utc_now  # noqa: E402
 from norway_company_agent.http import fetch_json  # noqa: E402
 from norway_company_agent.nav_jobs import NavJobIndex, attach_jobs  # noqa: E402
@@ -344,7 +344,8 @@ def main() -> None:
             contract = build_contract(profile, change_note=change_note(changes, compared))
         except Exception as exc:  # a malformed source record must not cost the batch its other envelopes
             errors[org].append({"stage": "contract", "error": f"{type(exc).__name__}: {str(exc)[:200]}", "trace": traceback.format_exc(limit=3)[-600:]})
-            contract = {"claims": [], "evidence": [], "summary": None}
+            unbuilt = empty_synthesis("its claims could not be built from the collected records")
+            contract = {"claims": [], "evidence": [], "summary": unbuilt["summary"], "synthesis": unbuilt}
         metrics = profile.get("run_metrics") or {}
         failed = any(item["state"] in {"source_error", "submission_error", "budget_exhausted"} for item in envelope["modules"].values())
         envelope.update({
@@ -354,6 +355,7 @@ def main() -> None:
             "claims": contract["claims"],
             "evidence": contract["evidence"],
             "summary": contract["summary"],
+            "synthesis": contract["synthesis"],
             "changes": changes,
             "errors": errors[org],
             "operations": {"requests": metrics.get("requests", 0), "runtime_ms": metrics.get("runtime_ms"), "third_party_cost_usd": 0},
@@ -361,12 +363,13 @@ def main() -> None:
         return envelope
 
     def minimal_envelope(org: str) -> dict[str, Any]:
+        unbuilt = empty_synthesis("the envelope could not be put together after an internal error")
         return {
             "run_id": args.run_id, "organisation_number": org, "state": "submission_error", "started_at": started_at, "completed_at": completed_at,
             "modules": {module: {"state": "submission_error", "retry_count": 0, "final_timestamp": completed_at} for module in requested_modules},
             "profile": {"organisation_number": org}, "agent_version": AGENT_VERSION,
             "run": {"run_id": args.run_id, "started_at": started_at, "completed_at": completed_at, "terminal_status": "failed"},
-            "claims": [], "evidence": [], "summary": None, "changes": [], "errors": errors[org],
+            "claims": [], "evidence": [], "summary": unbuilt["summary"], "synthesis": unbuilt, "changes": [], "errors": errors[org],
             "operations": {"requests": 0, "runtime_ms": None, "third_party_cost_usd": 0},
         }
 

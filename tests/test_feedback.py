@@ -37,8 +37,8 @@ class FeedbackTest(unittest.TestCase):
             self.assertIsNone(claim["value"])
             self.assertEqual(claim["availability"], "not_available")
             self.assertTrue(claim["note"])
-        self.assertNotIn("customer.no", contract["summary"]["text"])
-        self.assertNotIn("“—”", contract["summary"]["text"])
+        self.assertNotIn("customer.no", contract["summary"])
+        self.assertNotIn("“—”", contract["summary"])
         self.assertEqual(json.dumps(profile), original)
 
     def test_real_description_and_news_are_preserved(self):
@@ -52,7 +52,7 @@ class FeedbackTest(unittest.TestCase):
         profile = fixture_profile()
         profile["evidence"]["activity"] = {"status": "source_error", "note": "time budget ended"}
         profile["evidence"]["jobs"] = {"status": "source_error", "note": "time budget ended"}
-        text = build_contract(profile)["summary"]["text"]
+        text = build_contract(profile)["summary"]
         self.assertIn("hiring could not be assessed", text)
         self.assertIn("activity could not be assessed", text)
         self.assertNotIn("no dated news", text)
@@ -85,9 +85,12 @@ class FeedbackTest(unittest.TestCase):
         attack = '</script><img src=x onerror="alert(1)">'
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder) / "viewer.html"
-            write_viewer([{"organisation_number": "810034882", "claims": [], "summary": {"text": attack}}], target, label=attack)
+            rows = [{"organisation_number": "810034882", "claims": [], "summary": attack, "synthesis": {"summary": attack}},
+                    {"organisation_number": "810034883", "claims": [], "summary": {"text": attack}}]  # string form, and the object form used up to version 5
+            write_viewer(rows, target, label=attack)
             text = target.read_text()
             self.assertNotIn(attack, text)
+            self.assertIn("row.summary,row.synthesis?.summary,row.summary?.text", text)
             self.assertIn("connect-src 'none'", text)
             self.assertNotIn("__ENVELOPES_BASE64__", text)
             self.assertNotIn("innerHTML", text)
